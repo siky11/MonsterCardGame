@@ -2,6 +2,7 @@ package org.CardGame.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.CardGame.model.User;
+import org.CardGame.database.DBAccess;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,11 +11,15 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.stream.Collectors;
+import java.sql.SQLException;
 
 public class HttpServer {
     private static final int PORT = 10001;
+    private static DBAccess dbAccess; // Declare the DBAccess instance
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+        dbAccess = new DBAccess(); // Initialize the DBAccess instance
+
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server läuft auf Port " + PORT);
             while (true) {
@@ -22,7 +27,7 @@ public class HttpServer {
                 handleRequest(clientSocket);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Server error: " + e.getMessage());
         }
     }
 
@@ -38,46 +43,75 @@ public class HttpServer {
             String method = requestParts[0];
             String path = requestParts[1];
 
+            String responseBody;
+            int status;
+
             if ("POST".equalsIgnoreCase(method) && "/sessions".equals(path)) {
                 // Lese den Request-Body
                 String requestBody = in.lines().collect(Collectors.joining(System.lineSeparator()));
                 ObjectMapper objectMapper = new ObjectMapper();
-                User credentials = objectMapper.readValue(requestBody, User.class);
 
-                // Verarbeite die Anmeldeanfrage
-                String response = processLogin(credentials);
+                User credentials;
+                try {
+                    credentials = objectMapper.readValue(requestBody, User.class);
+                } catch (Exception e) {
+                    System.err.println("Failed to parse JSON: " + e.getMessage());
+                    responseBody = "{\"error\": \"Invalid JSON format\"}";
+                    status = 400; // Bad Request
+                    sendResponse(out, responseBody, status);
+                    return;
+                }
 
-                // Sende die Antwort
-                String httpResponse = "HTTP/1.1 200 OK\r\n" +
-                        "Content-Type: application/json\r\n" +
-                        "\r\n" +
-                        response;
-                out.write(httpResponse.getBytes("UTF-8"));
+                // Verarbeite die Anmeldeanfrage mit DBAccess
+                responseBody = processLogin(credentials);
+                status = 200; // OK
             } else {
-                // Unbekannte Methode oder Pfad
-                String httpResponse = "HTTP/1.1 404 Not Found\r\n\r\n";
-                out.write(httpResponse.getBytes("UTF-8"));
+                responseBody = "{\"error\": \"Not Found\"}";
+                status = 404; // Not Found
             }
-            out.flush();
+
+            // Build the response
+            sendResponse(out, responseBody, status);
+
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO Exception: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Exception: " + e.getMessage());
         } finally {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Failed to close client socket: " + e.getMessage());
             }
         }
     }
 
     private static String processLogin(User user) {
-        // Beispielüberprüfung: Hier würdest du die Logik für die Benutzerüberprüfung implementieren
-        if ("kienboec".equals(user.getUsername()) && "daniel".equals(user.getPassword())) {
-            // Erfolgreiche Anmeldung
-            return "{\"token\": \"" + user.getUsername() + "-mtcgToken\"}";
-        } else {
-            // Fehlgeschlagene Anmeldung
-            return "{\"error\": \"Invalid username or password\"}";
+        try {
+            // Use DBAccess to check user credentials
+            String token = dbAccess.loginUser(user.getUsername(), user.getPassword());
+            if (token != null) {
+                return "{\"token\": \"" + token + "\"}";
+            } else {
+                return "{\"error\": \"Invalid username or password\"}";
+            }
+        } catch (SQLException e) {
+            // Handle SQL exceptions and return appropriate error response
+            return "{\"error\": \"Database error: " + e.getMessage() + "\"}";
         }
+    }
+
+    private static void sendResponse(OutputStream out, String responseBody, int status) throws IOException {
+        // Create the header
+        HttpHeader header = new HttpHeader();
+        header.setHeader("HTTP/1.1", status + " OK"); // Set status line
+        header.setHeader("Content-Type", "application/json"); // Set content type
+        header.setHeader("Content-Length", String.valueOf(responseBody.length()));
+
+        // Build and send the response
+        String httpResponse = header.buildResponse(responseBody);
+        System.out.println("Response: " + responseBody); // Log response for debugging
+        out.write(httpResponse.getBytes("UTF-8"));
+        out.flush();
     }
 }
