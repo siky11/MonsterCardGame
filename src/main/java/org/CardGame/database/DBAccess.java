@@ -54,9 +54,9 @@ public class DBAccess {
 
     public String loginUser(String username, String password) throws SQLException {
         String token = null;
-        String query = "SELECT token FROM users WHERE username = ? AND password = ?"; // Adjust according to your schema
+        String query = "SELECT token FROM game_user WHERE username = ? AND Password = ?"; // Adjust according to your schema
 
-        try (Connection conn = DriverManager.getConnection(url, user, password);
+        try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, username);
@@ -68,6 +68,38 @@ public class DBAccess {
             }
         }
         return token;
+    }
+
+    // Überprüfen, ob der Benutzer existiert
+    public boolean userExists(String username) throws SQLException{
+        String sql = "SELECT COUNT(*) FROM game_user WHERE username = ?";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0; // Gibt true zurück, wenn der Benutzer existiert
+            }
+        } catch (SQLException e) {
+            System.err.println("Fehler beim Überprüfen des Benutzers: " + e.getMessage());
+        }
+        return false; // Standardmäßig false, wenn ein Fehler auftritt
+    }
+
+
+    public boolean createUser(User user) throws  SQLException{
+        String sql = "INSERT INTO game_user (username, password) VALUES (?, ?)";
+        try (Connection conn = connect(); // Verbindung herstellen
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, user.getUsername());
+            pstmt.setString(2, user.getPassword());
+            pstmt.executeUpdate(); // Ausführen der Einfüge-Anweisung
+            return true; // Benutzer erfolgreich erstellt
+        } catch (SQLException e) {
+            System.err.println("Fehler beim Erstellen des Benutzers: " + e.getMessage());
+            return false; // Fehler beim Erstellen des Benutzers
+        }
     }
 
     // Weitere Methoden für INSERT, UPDATE, DELETE, etc. hinzufügen

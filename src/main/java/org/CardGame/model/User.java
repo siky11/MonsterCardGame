@@ -1,8 +1,12 @@
 package org.CardGame.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class User {
     private String id; // Neue ID für den Benutzer
+    @JsonProperty("Username")
     private String username;
+    @JsonProperty("Password")
     private String password;
     private int elo;
     private int gamesPlayed;
@@ -15,7 +19,6 @@ public class User {
 
     // Konstruktor mit Parametern
     public User(String username, String password) {
-        this.id = id; // ID setzen
         this.username = username;
         this.password = password;
         this.elo = 1000; // Beispiel für einen Start-ELO-Wert
