@@ -10,25 +10,23 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.stream.Collectors;
 import java.sql.SQLException;
 
 public class HttpServer {
     private static final int PORT = 10001;
-    private static DBAccess dbAccess; // Declare the DBAccess instance
+    private static DBAccess dbAccess; // Instanz von DBAccess, um auf die Datenbank zuzugreifen
 
     public static void main(String[] args) {
-        dbAccess = new DBAccess(); // Initialize the DBAccess instance
+        dbAccess = new DBAccess(); // Initialisiert die DBAccess-Instanz
 
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) { // Erzeugt einen ServerSocket
             System.out.println("Server läuft auf Port " + PORT);
-            while (true) {
+            while (true) {  // Endlosschleife für die Annahme von Verbindungen
                 try {
-                    Socket clientSocket = serverSocket.accept();
-                    handleRequest(clientSocket);
+                    Socket clientSocket = serverSocket.accept(); // Akzeptiert eine Client-Verbindung
+                    handleRequest(clientSocket); // Verarbeitet die eingehende Anfrage
                 } catch (IOException e) {
                     System.err.println("Fehler beim Verarbeiten der Anfrage: " + e.getMessage());
-                    // Optional: Möglicherweise möchtest du den Server nicht stoppen, sondern weiterlaufen lassen
                 }
             }
         } catch (IOException e) {
@@ -40,50 +38,51 @@ public class HttpServer {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream()) {
 
-            // Lies die Anfragezeile
+            // Liest die Anfragezeile
             String requestLine = in.readLine();
             System.out.println("Request Line: " + requestLine);
 
+            // Überprüft, ob die Anfragezeile leer ist
             if (requestLine == null || requestLine.isEmpty()) {
                 System.err.println("Empty request");
                 sendResponse(out, "{\"error\": \"Empty request\"}", 400);
                 return;
             }
-            System.out.println("Received request: " + requestLine);
 
-            // Lese die Header
+            // Liest die Header der Anfrage
             HttpHeader httpHeader = new HttpHeader();
             int contentLength = readHeaders(in, httpHeader);
 
-            // Extrahiere HTTP-Methode und Pfad
+            // Extrahiere HTTP-Methode und Pfad aus der Anfrage
             String[] requestParts = requestLine.split(" ");
             if (requestParts.length < 2) {
                 System.err.println("Invalid request line");
                 sendResponse(out, "{\"error\": \"Invalid request\"}", 400);
                 return;
             }
-            String method = requestParts[0];
-            String path = requestParts[1];
+            String method = requestParts[0]; // HTTP-Methode (z.B. POST, GET)
+            String path = requestParts[1];  // Anfrage-Pfad (z.B. /users)
 
             String responseBody;
             int status;
 
-            if ("POST".equalsIgnoreCase(method) && "/sessions".equals(path)) {
-                // Benutzeranmeldung
-                responseBody = handleUserLogin(in, contentLength, out);
-                status = responseBody.startsWith("{\"token\"") ? 200 : 401;
 
-            } else if ("POST".equalsIgnoreCase(method) && "/users".equals(path)) {
+            if ("POST".equalsIgnoreCase(method) && "/users".equals(path)) {
                 // Benutzerregistrierung
                 responseBody = handleUserRegistration(in, contentLength, out);
                 status = responseBody.startsWith("{\"error\"") ? 400 : 201;
 
-            } else {
+            } else if ("POST".equalsIgnoreCase(method) && "/sessions".equals(path)) {
+                // Benutzeranmeldung
+                responseBody = handleUserLogin(in, contentLength, out);
+                status = responseBody.startsWith("{\"token\"") ? 200 : 401;
+
+            } else {  // Rückgabe einer Fehlermeldung, wenn der Pfad nicht gefunden wurde
                 responseBody = "{\"error\": \"Not Found\"}";
                 status = 404; // Not Found
             }
 
-            // Build the response
+            // Sendet die Antwort an den Client
             sendResponse(out, responseBody, status);
 
         } catch (IOException e) {
@@ -92,7 +91,7 @@ public class HttpServer {
             System.err.println("Exception: " + e.getMessage());
         } finally {
             try {
-                clientSocket.close();
+                clientSocket.close(); // Schließt den Client-Socket
             } catch (IOException e) {
                 System.err.println("Failed to close client socket: " + e.getMessage());
             }
@@ -101,28 +100,31 @@ public class HttpServer {
 
 
     private static String handleUserRegistration(BufferedReader in, int contentLength, OutputStream out) throws IOException {
+        // Liest den Anfrage-Body für die Benutzerregistrierung
         String requestBody = readRequestBody(in, contentLength, out);
         ObjectMapper objectMapper = new ObjectMapper();
         User newUser;
 
         try {
+            // Wandelt den JSON-Body in ein User-Objekt um
             newUser = objectMapper.readValue(requestBody, User.class);
-            System.out.println("Parsed User for Registration: " + newUser.getUsername() + ", " + newUser.getPassword());
         } catch (Exception e) {
             System.err.println("Failed to parse JSON: " + e.getMessage());
             return "{\"error\": \"Invalid JSON format\"}";
         }
 
-        // Verarbeite die Benutzerregistrierung mit DBAccess
+        // Verarbeitet die Benutzerregistrierung
         return processUserRegistration(newUser);
     }
 
     private static String handleUserLogin(BufferedReader in, int contentLength, OutputStream out) throws IOException {
+        // Liest den Anfrage-Body für die Benutzeranmeldung
         String requestBody = readRequestBody(in, contentLength, out);
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper(); // Erzeugt ein ObjectMapper für JSON-Verarbeitung
         User credentials;
 
         try {
+            // Wandelt den JSON-Body in ein User-Objekt um
             credentials = objectMapper.readValue(requestBody, User.class);
             System.out.println("Parsed User: " + credentials.getUsername() + ", " + credentials.getPassword());
         } catch (Exception e) {
@@ -130,22 +132,22 @@ public class HttpServer {
             return "{\"error\": \"Invalid JSON format\"}";
         }
 
-        // Verarbeite die Anmeldeanfrage mit DBAccess
+        // Verarbeitet die Anmeldeanfrage mit DBAccess
         return processLogin(credentials);
     }
 
     private static int readHeaders(BufferedReader in, HttpHeader httpHeader) throws IOException {
         String headerLine;
-        int contentLength = 0; // Initialisiere contentLength
+        int contentLength = 0; // Initialisiert contentLength
         int maxHeaders = 100; // Maximale Anzahl der Header (zum Schutz vor Endlosschleifen)
         int headerCount = 0;
 
         while (headerCount < maxHeaders && (headerLine = in.readLine()) != null && !headerLine.isEmpty()) {
             System.out.println("Header: " + headerLine);
-            String[] parts = headerLine.split(": ");
+            String[] parts = headerLine.split(": "); // Trennt Header-Namen und -Werte
             if (parts.length == 2) {
                 httpHeader.setHeader(parts[0], parts[1]);
-                // Überprüfe auf Content-Length
+                // Überprüft auf Content-Length
                 if ("Content-Length".equalsIgnoreCase(parts[0])) {
                     contentLength = Integer.parseInt(parts[1].trim());
                 }
@@ -153,77 +155,60 @@ public class HttpServer {
             headerCount++;
         }
 
+        // Überprüft auf zu viele Header und wirft eine Ausnahme
         if (headerCount >= maxHeaders) {
             throw new IOException("Too many headers; possible infinite loop detected.");
         }
 
-        return contentLength;
+        return contentLength;  // Gibt die Content-Length zurück
     }
 
     private static String readRequestBody(BufferedReader in, int contentLength, OutputStream out) throws IOException {
-        char[] bodyChars = new char[contentLength];
-        int read = in.read(bodyChars, 0, contentLength);
+        char[] bodyChars = new char[contentLength];  // Erstellt ein Char-Array für den Body
+        int read = in.read(bodyChars, 0, contentLength); // Liest den Body
         if (read != contentLength) {
             System.err.println("Expected " + contentLength + " chars, but got " + read);
             sendResponse(out, "{\"error\": \"Incomplete request body\"}", 400);
-            return null; // In diesem Fall null zurückgeben
+            return null; // Gibt null zurück, wenn die Anfrage unvollständig ist
         }
-        return new String(bodyChars);
+        return new String(bodyChars); // Gibt den gelesenen Body als String zurück
+    }
+
+    private static String processUserRegistration(User user) {
+        try {
+            // Überprüft, ob der Benutzer bereits existiert
+            if (dbAccess.userExists(user.getUsername())) {
+                return "{\"error\": \"User already exists\"}"; // Return error message
+            } else {
+                // Erstellt den Benutzer in der Datenbank
+                boolean isCreated = dbAccess.createUser(user);
+                if (isCreated) {
+                    return "{\"message\": \"User created successfully\"}"; // Erfolgsnachricht
+                } else {
+                    return "{\"error\": \"Failed to create user\"}"; // Gibt eine Fehlermeldung zurück
+                }
+            }
+        } catch (SQLException e) {
+            // Handhabt SQL-Ausnahmen und gibt die entsprechende Fehlermeldung zurück
+            return "{\"error\": \"Database error: " + e.getMessage() + "\"}"; // Return DB error
+        }
     }
 
     private static String processLogin(User user) {
         try {
-            // Use DBAccess to check user credentials
-            String token = dbAccess.loginUser(user.getUsername(), user.getPassword());
-            if (token != null) {
-                return "{\"token\": \"" + token + "\"}";
-            } else {
-                return "{\"error\": \"Invalid username or password\"}";
-            }
+            // Überprüft die Benutzerdaten in der Datenbank
+            return dbAccess.loginUser(user.getUsername(), user.getPassword());
         } catch (SQLException e) {
-            // Handle SQL exceptions and return appropriate error response
+            // Handhabt SQL-Ausnahmen und gibt die entsprechende Fehlermeldung zurück
             return "{\"error\": \"Database error: " + e.getMessage() + "\"}";
         }
     }
 
     private static void sendResponse(OutputStream out, String responseBody, int status) throws IOException {
-        String response = "HTTP/1.1 " + status + " " + getStatusMessage(status) + "\r\n" +
-                "Content-Type: application/json\r\n" +
-                "Content-Length: " + responseBody.length() + "\r\n" +
-                "\r\n" +
-                responseBody;
+        HttpHeader httpHeader = new HttpHeader(); // Create a new HttpHeader instance
+        String response = httpHeader.buildResponse(status, responseBody); // Build the response using HttpHeader
         out.write(response.getBytes());
         out.flush();
     }
 
-
-    private static String processUserRegistration(User user) {
-        try {
-            // Überprüfen, ob der Benutzer bereits existiert
-            if (dbAccess.userExists(user.getUsername())) {
-                return "{\"error\": \"User already exists\"}";
-            }
-
-            // Benutzer erstellen
-            boolean isCreated = dbAccess.createUser(user);
-            if (isCreated) {
-                return "{\"message\": \"User created successfully\"}";
-            } else {
-                return "{\"error\": \"Failed to create user\"}";
-            }
-        } catch (SQLException e) {
-            return "{\"error\": \"Database error: " + e.getMessage() + "\"}";
-        }
-    }
-
-
-    private static String getStatusMessage(int status) {
-        switch (status) {
-            case 200: return "OK";
-            case 400: return "Bad Request";
-            case 401: return "Unauthorized";
-            case 404: return "Not Found";
-            default: return "Internal Server Error";
-        }
-    }
 }

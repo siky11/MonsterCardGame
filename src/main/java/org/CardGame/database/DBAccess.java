@@ -2,10 +2,9 @@ package org.CardGame.database;
 
 import org.CardGame.model.User;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.sql.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import com.fasterxml.jackson.databind.ObjectMapper; // Für die JSON-Serialisierung
+import java.sql.*; // Für die Datenbankoperationen
+
 
 
 public class DBAccess {
@@ -18,16 +17,16 @@ public class DBAccess {
         return DriverManager.getConnection(url, user, password);
     }
 
-    // Beispielmethode zum Abrufen eines Benutzers
+    // Methode zum Abrufen eines Benutzers anhand des Benutzernamens wird jetzt noch nicht gebraucht
     public String getUserByUsername(String username) {
         String query = "SELECT * FROM game_user WHERE username = ?";
-        String jsonResult = null;
+        String jsonResult = null; // Variable für das Ergebnis im JSON-Format
 
         try (Connection conn = connect();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+             PreparedStatement pstmt = conn.prepareStatement(query)) { // Vorbereiten der SQL-Abfrage
 
-            pstmt.setString(1, username);
-            ResultSet rs = pstmt.executeQuery();
+            pstmt.setString(1, username); // Setzen des Benutzernamens als Parameter
+            ResultSet rs = pstmt.executeQuery(); // Ausführen der Abfrage
 
             if(rs.next()){
 
@@ -52,22 +51,50 @@ public class DBAccess {
         return jsonResult;
     }
 
+    // Methode zur Benutzeranmeldung
     public String loginUser(String username, String password) throws SQLException {
-        String token = null;
-        String query = "SELECT token FROM game_user WHERE username = ? AND Password = ?"; // Adjust according to your schema
+        String token = null; // Variable für das Token des Benutzers
+        String query = "SELECT token FROM game_user WHERE username = ? AND password = ?"; // Annahme: Es gibt ein Token-Feld
 
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setString(1, username);
+            pstmt.setString(1, username);  // Setzen des Benutzernamens
             pstmt.setString(2, password);
-            ResultSet rs = pstmt.executeQuery();
+            ResultSet rs = pstmt.executeQuery(); // Ausführen der Abfrage
 
-            if (rs.next()) {
-                token = rs.getString("token"); // Assuming you have a token field in your users table
+            if (rs.next()) { // Wenn Anmeldedaten korrekt sind
+                token = rs.getString("token"); // Abrufen des Tokens
+
+                // Wenn bereits ein Token vorhanden ist, ist der Benutzer bereits eingeloggt
+                if (token != null && !token.isEmpty()) {
+                    return "{\"error\": \"User is already logged in\"}";
+                }
+
+                // Wenn kein Token vorhanden ist, generiere ein neues Token im Format username-mtcgToken
+                token = username + "-mtcgToken"; // Token in der gewünschten Form
+                saveTokenForUser(username, token); // Speichere das Token in der Datenbank
+
+            } else {
+                // Benutzername oder Passwort sind falsch
+                return "{\"error\": \"Invalid username or password\"}";
             }
         }
-        return token;
+        // Gib das neue Token zurück
+        return "{\"token\": \"" + token + "\"}";
+    }
+
+    // Methode zum Speichern des Tokens für den Benutzer in der Datenbank
+    public void saveTokenForUser(String username, String token) throws SQLException {
+        String updateQuery = "UPDATE game_user SET token = ? WHERE username = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+
+            pstmt.setString(1, token);
+            pstmt.setString(2, username);
+            pstmt.executeUpdate();
+        }
     }
 
     // Überprüfen, ob der Benutzer existiert
@@ -86,7 +113,7 @@ public class DBAccess {
         return false; // Standardmäßig false, wenn ein Fehler auftritt
     }
 
-
+    // Methode zum Erstellen eines neuen Benutzers
     public boolean createUser(User user) throws  SQLException{
         String sql = "INSERT INTO game_user (username, password) VALUES (?, ?)";
         try (Connection conn = connect(); // Verbindung herstellen
@@ -97,10 +124,8 @@ public class DBAccess {
             pstmt.executeUpdate(); // Ausführen der Einfüge-Anweisung
             return true; // Benutzer erfolgreich erstellt
         } catch (SQLException e) {
-            System.err.println("Fehler beim Erstellen des Benutzers: " + e.getMessage());
             return false; // Fehler beim Erstellen des Benutzers
         }
     }
 
-    // Weitere Methoden für INSERT, UPDATE, DELETE, etc. hinzufügen
 }
