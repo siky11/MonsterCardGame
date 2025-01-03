@@ -18,7 +18,7 @@ public class HttpRequestParser {
     public HttpRequestParser(BufferedReader input, OutputStream output) {
         this.input = input;
         this.output = output;
-        this.headers = new HttpHeader(); // Deine vorhandene Header-Verwaltung
+        this.headers = new HttpHeader();
         this.responseSender = new HttpResponseSender();
     }
 
@@ -46,8 +46,6 @@ public class HttpRequestParser {
         return new HttpRequest(method, path, headerMap, body); // Gibt eine vollständige Request zurück
     }
 
-
-    // Deine readHeaders-Methode bleibt unverändert
     private int readHeaders(BufferedReader in, HttpHeader httpHeader) throws IOException {
         String headerLine;
         int contentLength = 0;
@@ -73,7 +71,6 @@ public class HttpRequestParser {
         return contentLength;
     }
 
-    // Deine readRequestBody-Methode bleibt ebenfalls unverändert
     private String readRequestBody(BufferedReader in, int contentLength, OutputStream out) throws IOException {
         char[] bodyChars = new char[contentLength];
         int read = in.read(bodyChars, 0, contentLength);

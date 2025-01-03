@@ -2,6 +2,8 @@ package org.CardGame.server;
 
 import org.CardGame.database.DBAccess;
 import org.CardGame.model.HttpRequest;
+import org.CardGame.database.AuthDB;
+import org.CardGame.database.UserDB;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,10 +17,10 @@ public class HttpRequestHandler {
     private UserLoginService userLoginService;
     private HttpResponseSender responseSender;
 
-    public HttpRequestHandler(DBAccess dbAccess) {
+    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB) {
 
-        this.userRegistrationService = new UserRegistrationService(dbAccess);
-        this.userLoginService = new UserLoginService(dbAccess);
+        this.userRegistrationService = new UserRegistrationService(dbAccess, userDB);
+        this.userLoginService = new UserLoginService(dbAccess, authDB);
         this.responseSender = new HttpResponseSender();
         this.requestParser = new HttpRequestParser(null, null); // Später in handle() initialisieren
     }

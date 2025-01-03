@@ -1,6 +1,7 @@
 package org.CardGame.server;
 
 import org.CardGame.database.DBAccess;
+import org.CardGame.database.UserDB;
 import org.CardGame.model.HttpRequest;
 import org.CardGame.model.User;
 
@@ -10,9 +11,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class UserRegistrationService {
 
     private DBAccess dbAccess; // Annahme: du hast eine DB-Access-Klasse für DB-Interaktionen
+    private UserDB userDB;
 
-    public UserRegistrationService(DBAccess dbAccess) {
+    public UserRegistrationService(DBAccess dbAccess, UserDB userDB) {
         this.dbAccess = dbAccess;
+        this.userDB = userDB;
     }
 
     public String registerUser(HttpRequest request) {
@@ -35,11 +38,11 @@ public class UserRegistrationService {
     private String processUserRegistration(User user) {
         try {
             // Überprüft, ob der Benutzer bereits existiert
-            if (dbAccess.userExists(user.getUsername())) {
+            if (userDB.userExists(user.getUsername())) {
                 return "{\"error\": \"User already exists\"}"; // Benutzer existiert bereits
             } else {
                 // Erstellt den Benutzer in der Datenbank
-                boolean isCreated = dbAccess.createUser(user);
+                boolean isCreated = userDB.createUser(user);
                 if (isCreated) {
                     return "{\"message\": \"User created successfully\"}"; // Benutzer erfolgreich erstellt
                 } else {

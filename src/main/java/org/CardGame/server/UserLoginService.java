@@ -4,6 +4,8 @@ package org.CardGame.server;
 import org.CardGame.database.DBAccess;
 import org.CardGame.model.HttpRequest;
 import org.CardGame.model.User;
+import org.CardGame.database.AuthDB;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.SQLException;
@@ -11,9 +13,13 @@ import java.sql.SQLException;
 public class UserLoginService {
 
     private DBAccess dbAccess;  // Eine DB-Access-Klasse zur Verwaltung der Datenbankinteraktionen
+    private AuthDB authDB;
 
-    public UserLoginService(DBAccess dbAccess) {
+
+    public UserLoginService(DBAccess dbAccess, AuthDB authDB) {
         this.dbAccess = dbAccess;
+        this.authDB = authDB;
+
     }
 
     public String authenticateUser(HttpRequest request) {
@@ -37,7 +43,7 @@ public class UserLoginService {
     private String processLogin(User user) {
         try {
             // Überprüft die Benutzerdaten in der Datenbank
-            return dbAccess.loginUser(user.getUsername(), user.getPassword());
+            return authDB.loginUser(user.getUsername(), user.getPassword());
         } catch (SQLException e) {
             // Handhabt SQL-Ausnahmen und gibt die entsprechende Fehlermeldung zurück
             return "{\"error\": \"Database error: " + e.getMessage() + "\"}";
