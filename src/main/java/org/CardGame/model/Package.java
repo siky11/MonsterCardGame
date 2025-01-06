@@ -12,14 +12,20 @@ public class Package {
         this.packageCards = new ArrayList<>();
     }
 
-    public void addCard(Card card) {
+    public boolean addCard(Card card) {
         if (packageCards.size() < 5) {
             packageCards.add(card);
+            return true;
         } else {
             System.out.println("Ein Paket kann nur bis zu 5 Karten enthalten.");
+            return false;
         }
     }
 
     public List<Card> getCards() {
         return packageCards;
-    }}
+    }
+
+    // Getter, um die Anzahl der Karten zu erhalten
+    public int getCardCount() { return packageCards.size(); }
+}

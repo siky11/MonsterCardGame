@@ -50,4 +50,22 @@ public class AuthDB {
             pstmt.executeUpdate();
         }
     }
+
+    // Neue Methode, die das Token für einen Benutzer zurückgibt
+    public String getTokenForUser(String username) throws SQLException {
+        String token = null;
+        String query = "SELECT token FROM game_user WHERE username = ?";
+
+        try (Connection conn = dbAccess.connect();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                token = rs.getString("token");
+            }
+        }
+        return token;  // Gibt das Token zurück (oder null, wenn der Benutzer nicht gefunden wird)
+    }
 }

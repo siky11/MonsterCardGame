@@ -1,6 +1,7 @@
 package org.CardGame.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class User {
     private String id; // Neue ID für den Benutzer
@@ -11,18 +12,15 @@ public class User {
     private int elo;
     private int gamesPlayed;
 
-
-    // Standardkonstruktor
-    public User() {
-        // Standardwerte oder keine Initialisierung
-    }
-
-    // Konstruktor mit Parametern
-    public User(String username, String password) {
+    // Konstruktor mit Parametern, bei dem alle Felder übergeben werden
+    @JsonCreator
+    public User(@JsonProperty("Username") String username,
+                @JsonProperty("Password") String password ) {
+        this.id = id;
         this.username = username;
         this.password = password;
-        this.elo = 1000; // Beispiel für einen Start-ELO-Wert
-        this.gamesPlayed = 0;
+        this.elo = 1000; // Verwende 1000 als Startwert, falls ELO 0 oder negativ ist
+        this.gamesPlayed = 0; // Spiele nur auf 0 oder größer setzen
     }
 
     public String getId() {

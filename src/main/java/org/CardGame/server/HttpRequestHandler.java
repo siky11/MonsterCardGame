@@ -1,6 +1,7 @@
 package org.CardGame.server;
 
 import org.CardGame.database.DBAccess;
+import org.CardGame.database.PackageDB;
 import org.CardGame.model.HttpRequest;
 import org.CardGame.database.AuthDB;
 import org.CardGame.database.UserDB;
@@ -16,11 +17,13 @@ public class HttpRequestHandler {
     private UserRegistrationService userRegistrationService;
     private UserLoginService userLoginService;
     private HttpResponseSender responseSender;
+    private PackageService packageService;
 
-    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB) {
+    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageDB packageDB) {
 
         this.userRegistrationService = new UserRegistrationService(dbAccess, userDB);
         this.userLoginService = new UserLoginService(dbAccess, authDB);
+        this.packageService = new PackageService(dbAccess, authDB, packageDB);
         this.responseSender = new HttpResponseSender();
         this.requestParser = new HttpRequestParser(null, null); // Später in handle() initialisieren
     }
@@ -52,6 +55,9 @@ public class HttpRequestHandler {
             responseBody = userLoginService.authenticateUser(request);
             status = responseBody.startsWith("{\"token\"") ? 200 : 401;
 
+        }else if ("POST".equalsIgnoreCase(method) && "/packages".equals(path)){
+            responseBody = packageService.startPackageCreation(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
         } else {
             responseBody = "{\"error\": \"Not Found\"}";
             status = 404; // Not Found

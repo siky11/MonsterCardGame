@@ -2,6 +2,7 @@ package org.CardGame.server;
 
 import org.CardGame.database.DBAccess;
 import org.CardGame.database.AuthDB;
+import org.CardGame.database.PackageDB;
 import org.CardGame.database.UserDB;
 
 import java.io.BufferedReader;
@@ -17,13 +18,15 @@ public class HttpServer {
     private DBAccess dbAccess;
     private AuthDB authDB;
     private UserDB userDB;
+    private PackageDB packageDB;
     private static final int PORT = 10001;
 
     // Konstruktordefinition: Hier wird DBAccess injiziert
-    public HttpServer(DBAccess db, AuthDB authDB, UserDB userDB) {
+    public HttpServer(DBAccess db, AuthDB authDB, UserDB userDB, PackageDB packageDB) {
         this.dbAccess = db;  // DBAccess wird über den Konstruktor übergeben
         this.authDB = authDB;       // AuthDB wird über den Konstruktor übergeben
         this.userDB = userDB;       // UserDB wird über den Konstruktor übergeben
+        this.packageDB = packageDB;
     }
 
     // Run-Methode zum Starten des Servers
@@ -47,7 +50,7 @@ public class HttpServer {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream()) {
 
-            HttpRequestHandler requestHandler = new HttpRequestHandler(dbAccess, authDB, userDB);
+            HttpRequestHandler requestHandler = new HttpRequestHandler(dbAccess, authDB, userDB, packageDB);
             requestHandler.handle(in, out, clientSocket);
         } catch (IOException e) {
             System.err.println("IO Exception: " + e.getMessage());
