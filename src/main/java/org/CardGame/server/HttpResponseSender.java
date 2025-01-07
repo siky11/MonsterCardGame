@@ -20,10 +20,10 @@ public class HttpResponseSender {
 
     private String getStatusMessage(int status) {
         switch (status) {
-            case 200: return "OK - Login successful";
+            case 200: return "OK";
             case 201: return "Created";
-            case 400: return "Bad Request - User already exists";
-            case 401: return "Unauthorized - Login failed";
+            case 400: return "Bad Request";
+            case 401: return "Unauthorized";
             case 404: return "Not Found";
             case 409: return "Conflict";
             default: return "Internal Server Error";

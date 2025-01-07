@@ -99,7 +99,10 @@ public class PackageTransactionDB {
             }
         }
 
-        if (packageId != null) {
+        // Prüfen, ob ein Paket gefunden wurde
+        if (packageId == null) {
+            throw new SQLException("Keine verfügbaren Pakete in der Datenbank.");  // Fehlermeldung bei fehlendem Paket
+        }else if(packageId != null){
             // 2. Alle Karten aus dem zufälligen Paket abfragen (Verbindung zur package_cards-Tabelle)
             String cardQuery = "SELECT gc.card_id, gc.name, gc.damage, gc.element_type, gc.type " +
                     "FROM game_card gc " +
@@ -131,4 +134,27 @@ public class PackageTransactionDB {
 
         return new Package(cards, packageId);  // Gibt die Liste der Karten des zufälligen Pakets zurück
     }
+
+    // Paket löschen
+    public String deletePackage(UUID packageId) {
+        String query = "DELETE FROM game_package WHERE package_id = ?";
+        String jsonResult;
+
+        try (Connection conn = dbAccess.connect();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setObject(1, packageId);
+            int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows > 0) {
+                jsonResult = "{\"message\": \"Package deleted successfully\"}";
+            } else {
+                jsonResult = "{\"error\": \"No package found with the given ID\"}";
+            }
+        } catch (SQLException e) {
+            jsonResult = "{\"error\": \"" + e.getMessage() + "\"}";
+        }
+        return jsonResult;
+    }
+
 }

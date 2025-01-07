@@ -51,25 +51,4 @@ public class PackageCreationDB {
         }
     }
 
-    // Paket löschen
-    public String deletePackage(UUID packageId) {
-        String query = "DELETE FROM game_package WHERE package_id = ?";
-        String jsonResult;
-
-        try (Connection conn = dbAccess.connect();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setObject(1, packageId);
-            int affectedRows = pstmt.executeUpdate();
-
-            if (affectedRows > 0) {
-                jsonResult = "{\"message\": \"Package deleted successfully\"}";
-            } else {
-                jsonResult = "{\"error\": \"No package found with the given ID\"}";
-            }
-        } catch (SQLException e) {
-            jsonResult = "{\"error\": \"" + e.getMessage() + "\"}";
-        }
-        return jsonResult;
-    }
 }

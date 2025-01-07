@@ -56,13 +56,18 @@ public class PackageTransactionService {
 
             // Hole den aktuellen Coin-Bestand des Benutzers
             int currentCoins = packageTransactionDB.getUserCoins(userId);
+            System.out.println("Aktuelle Coins: " + currentCoins);
 
             if (currentCoins < packageCost) {
+                System.out.println("Aktuelle Coins: " + currentCoins + ", Paketkosten: " + packageCost);
                 return "{\"error\": \"Nicht genügend Coins für diese Transaktion.\"}"; // Fehlende Coins
             }
 
             // Ziehe Coins vom Benutzer ab
             packageTransactionDB.updateUserCoins(userId, currentCoins - packageCost);
+
+            int updatedCoins = packageTransactionDB.getUserCoins(userId);
+            System.out.println("Benutzer nach der Transaktion hat " + updatedCoins + " Coins.");
 
             // Hole ein vorhandenes Paket aus der Datenbank (hier Beispiel, erste verfügbare Zeile)
             Package packageCards = packageTransactionDB.getRandomPackageCards(); // Beispielhafte Abfrage
@@ -76,6 +81,8 @@ public class PackageTransactionService {
             packageTransactionDB.addCardsToUserStack(userId, packageCards.getCards());
             //speichert Transaktion
             packageTransactionDB.saveTransaction(userId, packageCards.getPackageId());
+            //löscht das Package das aquired wurde
+            packageTransactionDB.deletePackage(packageCards.getPackageId());
 
             return "{\"message\": \"Transaktion erfolgreich, Paket zugewiesen.\"}"; // Erfolgreiche Transaktion
 
