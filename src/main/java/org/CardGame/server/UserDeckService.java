@@ -5,40 +5,39 @@ import org.CardGame.model.HttpRequest;
 import java.util.List;
 import org.CardGame.model.Card;
 
-public class UserStackService {
 
-    private DBAccess dbAccess; // Verwaltung von Datenbankinteraktionen
-    private CardDB cardDB; // Spezielle DB-Klasse für Pakettransaktionen
-    private AuthDB authDB; // AuthDB für Authentifizierungsprüfungen
+public class UserDeckService {
+
+    private DBAccess dbAccess; // Datenbankzugriff
+    private CardDB cardDB; // Kartenbezogene Datenbankabfragen
+    private AuthDB authDB; // Authentifizierung
     private TokenValidator tokenValidator;
 
-    // Konstruktor mit Dependency Injection für DB und andere Services
-    public UserStackService(DBAccess dbAccess, AuthDB authDB, CardDB cardDB) {
+    // Konstruktor für Dependency Injection
+    public UserDeckService(DBAccess dbAccess, AuthDB authDB, CardDB cardDB) {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
         this.cardDB = cardDB;
         this.tokenValidator = new TokenValidator(authDB);
     }
 
-    public String getStackCards(HttpRequest request) {
-        String requestToken = request.getHeaders().get("Authorization");  // Token aus den Request-Headers holen
+    public String getDeckCards(HttpRequest request) {
+        String requestToken = request.getHeaders().get("Authorization"); // Token aus den Headern abrufen
 
         try {
-            // Extrahiere den Benutzernamen aus dem Token
+
+            // Benutzername aus dem Token extrahieren und den Token validieren
             String username = tokenValidator.validate(requestToken);
 
-            // Holen der Benutzerkarten
-            List<Card> userCards = cardDB.getUserStack(username);
+            // Karten aus dem Deck des Benutzers abrufen
+            List<Card> userDeck = cardDB.getUserDeck(username);
 
-            if (userCards == null || userCards.isEmpty()) {
-                return "{\"error\": \"No cards found for user.\"}";
-            }
 
-            // Karten-Daten in schönem JSON-Format zurückgeben
+            // Karten in JSON umwandeln und als Antwort formatieren
             StringBuilder response = new StringBuilder();
-            response.append("{\n  \"cards\": [\n");
-            for (int i = 0; i < userCards.size(); i++) {
-                Card card = userCards.get(i);
+            response.append("{\n  \"deck\": [\n");
+            for (int i = 0; i < userDeck.size(); i++) {
+                Card card = userDeck.get(i);
                 response.append("    {\n")
                         .append("      \"id\": \"").append(card.getCard_id()).append("\",\n")
                         .append("      \"name\": \"").append(card.getName()).append("\",\n")
@@ -46,7 +45,7 @@ public class UserStackService {
                         .append("      \"elementType\": \"").append(card.getElementType()).append("\",\n")
                         .append("      \"type\": \"").append(card.getType()).append("\"\n")
                         .append("    }");
-                if (i < userCards.size() - 1) {
+                if (i < userDeck.size() - 1) {
                     response.append(",\n\n");
                 }
             }
@@ -56,8 +55,4 @@ public class UserStackService {
             return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
         }
     }
-
-
 }
-
-

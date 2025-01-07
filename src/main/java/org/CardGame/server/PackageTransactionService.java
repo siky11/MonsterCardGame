@@ -65,12 +65,6 @@ public class PackageTransactionService {
                 return "{\"error\": \"Nicht genügend Coins für diese Transaktion.\"}"; // Fehlende Coins
             }
 
-            // Ziehe Coins vom Benutzer ab
-            packageTransactionDB.updateUserCoins(userId, currentCoins - packageCost);
-
-            int updatedCoins = packageTransactionDB.getUserCoins(userId);
-            System.out.println("Benutzer nach der Transaktion hat " + updatedCoins + " Coins.");
-
             // Hole ein vorhandenes Paket aus der Datenbank (hier Beispiel, erste verfügbare Zeile)
             Package packageCards = packageTransactionDB.getRandomPackageCards(); // Beispielhafte Abfrage
 
@@ -78,6 +72,12 @@ public class PackageTransactionService {
                 // Falls das Paket leer ist oder keine Karten enthält
                 return "{\"error\": \"Keine verfügbaren Pakete gefunden.\"}"; // Fehler: Keine Pakete verfügbar
             }
+
+            // Ziehe Coins vom Benutzer ab
+            packageTransactionDB.updateUserCoins(userId, currentCoins - packageCost);
+
+            int updatedCoins = packageTransactionDB.getUserCoins(userId);
+            System.out.println("Benutzer nach der Transaktion hat " + updatedCoins + " Coins.");
 
             // Füge das Paket dem Benutzer zu
             packageTransactionDB.addCardsToUserStack(userId, packageCards.getCards());

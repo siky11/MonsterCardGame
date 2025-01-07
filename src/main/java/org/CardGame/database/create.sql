@@ -54,3 +54,9 @@ CREATE TABLE package_transactions (
     FOREIGN KEY (package_id) REFERENCES game_package(package_id) ON DELETE CASCADE
 );
 
+CREATE TABLE user_deck (
+    user_id UUID REFERENCES game_user(id),
+    card_id UUID REFERENCES game_card(card_id),
+    PRIMARY KEY (user_id, card_id)
+);
+

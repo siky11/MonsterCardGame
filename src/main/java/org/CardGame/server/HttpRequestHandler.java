@@ -17,6 +17,7 @@ public class HttpRequestHandler {
     private PackageCreationService packageCreationService;
     private PackageTransactionService packageTransactionService;
     private UserStackService userStackService;
+    private UserDeckService userDeckService;
 
     public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB) {
 
@@ -24,6 +25,7 @@ public class HttpRequestHandler {
         this.userLoginService = new UserLoginService(dbAccess, authDB);
         this.packageCreationService = new PackageCreationService(dbAccess, authDB, packageCreationDB);
         this.userStackService = new UserStackService(dbAccess, authDB, cardDB);
+        this.userDeckService = new UserDeckService(dbAccess, authDB, cardDB);
         this.packageTransactionService = new PackageTransactionService(dbAccess, authDB, packageTransactionDB, userDB);
         this.responseSender = new HttpResponseSender();
         this.requestParser = new HttpRequestParser(null, null); // Später in handle() initialisieren
@@ -66,6 +68,10 @@ public class HttpRequestHandler {
 
         } else if("GET".equalsIgnoreCase(method) && "/cards".equals(path)){
             responseBody = userStackService.getStackCards(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
+        }else if("GET".equalsIgnoreCase(method) && "/deck".equals(path)){
+            responseBody = userDeckService.getDeckCards(request);
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
 
         }else {
