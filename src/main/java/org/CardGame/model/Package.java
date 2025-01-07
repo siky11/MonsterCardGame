@@ -4,12 +4,15 @@ import org.CardGame.model.Card;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Package {
     private List<Card> packageCards;
+    private UUID packageId;
 
-    public Package() {
-        this.packageCards = new ArrayList<>();
+    public Package(List<Card> packageCards, UUID packageId) {
+        this.packageId = packageId;
+        this.packageCards = packageCards;
     }
 
     public boolean addCard(Card card) {
@@ -25,6 +28,8 @@ public class Package {
     public List<Card> getCards() {
         return packageCards;
     }
+
+    public UUID getPackageId() { return packageId; }
 
     // Getter, um die Anzahl der Karten zu erhalten
     public int getCardCount() { return packageCards.size(); }

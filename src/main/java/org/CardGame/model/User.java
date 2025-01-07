@@ -11,6 +11,7 @@ public class User {
     private String password;
     private int elo;
     private int gamesPlayed;
+    private int coins;
 
     // Konstruktor mit Parametern, bei dem alle Felder übergeben werden
     @JsonCreator
@@ -21,6 +22,7 @@ public class User {
         this.password = password;
         this.elo = 1000; // Verwende 1000 als Startwert, falls ELO 0 oder negativ ist
         this.gamesPlayed = 0; // Spiele nur auf 0 oder größer setzen
+        this.coins = 20;
     }
 
     public String getId() {
@@ -34,6 +36,10 @@ public class User {
     // Getter- und Setter-Methoden
     public String getUsername() {
         return username;
+    }
+
+    public int getCoins() {
+        return coins;
     }
 
     public void setUsername(String username) {

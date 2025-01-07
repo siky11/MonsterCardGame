@@ -2,7 +2,7 @@ package org.CardGame.server;
 
 import org.CardGame.database.AuthDB;
 import org.CardGame.database.DBAccess;
-import org.CardGame.database.PackageDB;
+import org.CardGame.database.PackageCreationDB;
 import org.CardGame.model.Card;
 import org.CardGame.model.HttpRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,16 +10,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.SQLException;
 import java.util.List;
 
-public class PackageService {
+public class PackageCreationService {
 
     private DBAccess dbAccess; // Verwaltung von Datenbankinteraktionen
-    private PackageDB packageDB; // Spezielle DB-Klasse für die Paketverwaltung
+    private PackageCreationDB packageCreationDB; // Spezielle DB-Klasse für die Paketverwaltung
     private AuthDB authDB; // AuthDB für Authentifizierungsprüfungen
 
     // Konstruktor mit Dependency Injection für DB und ObjectMapper
-    public PackageService(DBAccess dbAccess, AuthDB authDB, PackageDB packageDB) {
+    public PackageCreationService(DBAccess dbAccess, AuthDB authDB, PackageCreationDB packageCreationDB) {
         this.dbAccess = dbAccess;
-        this.packageDB = packageDB;
+        this.packageCreationDB = packageCreationDB;
         this.authDB = authDB;
     }
 
@@ -71,7 +71,7 @@ public class PackageService {
             }
 
             // Erstelle das Paket und füge die Karten hinzu
-            String jsonResult = packageDB.createPackageAndAddCards(cards);
+            String jsonResult = packageCreationDB.createPackageAndAddCards(cards);
 
             return jsonResult;
 

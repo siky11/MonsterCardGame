@@ -1,10 +1,8 @@
 package org.CardGame;
 
-import org.CardGame.database.AuthDB;
-import org.CardGame.database.DBAccess;
-import org.CardGame.database.PackageDB;
-import org.CardGame.database.UserDB;
+import org.CardGame.database.*;
 import org.CardGame.server.HttpServer;
+import org.CardGame.server.PackageTransactionService;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,10 +10,11 @@ public class Main {
         DBAccess dbAccess = new DBAccess();
         AuthDB authDB = new AuthDB();
         UserDB userDB = new UserDB();
-        PackageDB packageDB = new PackageDB();
+        PackageCreationDB packageCreationDB = new PackageCreationDB();
+        PackageTransactionDB packageTransactionDB = new PackageTransactionDB();
 
         // Erstelle eine HttpServer-Instanz
-        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageDB);
+        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB);
 
         // Starte den Server über die Instanz
         server.runServer();  // runServer ist jetzt eine Instanzmethode

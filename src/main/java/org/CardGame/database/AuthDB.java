@@ -1,19 +1,19 @@
 package org.CardGame.database;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.*;
 
 public class AuthDB {
 
     private DBAccess dbAccess = new DBAccess();
-    private UserDB userDB = new UserDB();
 
     // Methode zur Benutzeranmeldung
     public String loginUser(String username, String password) throws SQLException {
         String token = null;
         String query = "SELECT token FROM game_user WHERE username = ? AND password = ?";
 
-        try (Connection conn = new DBAccess().connect();
+        try (Connection conn = dbAccess.connect();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, username);
@@ -67,5 +67,46 @@ public class AuthDB {
             }
         }
         return token;  // Gibt das Token zurück (oder null, wenn der Benutzer nicht gefunden wird)
+    }
+
+    public String extractUsernameFromToken(String requestToken) throws IOException {
+        try {
+            // Token format: username-mtcgToken, split by "-"
+            String[] tokenParts = requestToken.split("-");
+
+            // Wenn das Token nicht richtig formatiert ist, werfe eine Ausnahme
+            if (tokenParts.length != 2) {
+                throw new IOException("Ungültiges Token-Format. Erforderlich: username-mtcgToken");
+            }
+
+            // Der Benutzername befindet sich am Anfang des Tokens
+            String username = tokenParts[0];
+
+            return username; // Benutzername zurückgeben
+
+        } catch (IOException e) {
+            // Fehler beim Extrahieren des Benutzernamens
+            throw new IOException("Fehler beim Extrahieren des Benutzernamens aus dem Token", e);
+        }
+    }
+
+    // Überprüfen, ob der Token für den spezifischen Benutzer gültig ist
+    public boolean isValidToken(String requestToken) {
+        try {
+            // Extrahiert den Benutzernamen aus dem Token (dies könnte anders aussehen, je nachdem, wie dein Token aufgebaut ist)
+            String username = extractUsernameFromToken(requestToken);
+
+            // Holt das Token für diesen spezifischen Benutzer aus der DB
+            String validToken = getTokenForUser(username);
+
+            // Vergleicht den übergebenen Token mit dem aus der DB gespeicherten Token des Benutzers
+            return requestToken != null && requestToken.equals(validToken);
+
+        } catch (SQLException e) {
+            return false;
+        }catch (IOException e) {
+            // Fehler beim Extrahieren des Benutzernamens aus dem Token
+            return false;
+        }
     }
 }

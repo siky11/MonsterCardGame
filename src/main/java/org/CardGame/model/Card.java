@@ -49,6 +49,12 @@ public class Card {
 
     public void setType(CardType type) { this.type = type; }
 
+    public void setCard_id(UUID card_id) { this.card_id = card_id; }
+
+    public void setDamage(int damage) { this.damage = damage; }
+
+    public void setName(String name) { this.name = name; }
+
     // Typ basierend auf dem Namen bestimmen
     public CardType extractTypeFromName(String name) {
         if (name.toLowerCase().contains("spell")) {

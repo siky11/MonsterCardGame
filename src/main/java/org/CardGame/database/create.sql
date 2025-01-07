@@ -5,7 +5,10 @@ CREATE TABLE game_user (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    token VARCHAR(255)
+    elo INT NOT NULL DEFAULT 1000,        -- Elo-Score, Standardwert ist 1000
+    games_played INT NOT NULL DEFAULT 0, -- Anzahl der gespielten Spiele, Standardwert ist 0
+    coins INT NOT NULL DEFAULT 20,       -- Coins, Standardwert ist 20
+    token VARCHAR(255)                   -- Optionales Feld für Token
 );
 
 --Erstellt die Tabelle 'package'
@@ -33,5 +36,21 @@ CREATE TABLE package_cards (
     FOREIGN KEY (card_id) REFERENCES game_card(card_id) ON DELETE CASCADE -- sorgt dafür das die Karte (on delete Cascade sorgt dafür das die Datenbank automatisch verknüpfte einträge löscht)
 );
 
+CREATE TABLE user_stack (
+    user_id UUID NOT NULL,              -- Referenz auf einen Benutzer
+    card_id UUID NOT NULL,              -- Referenz auf eine Karte
+    PRIMARY KEY (user_id, card_id),     -- Jede Karte gehört nur einmal zum Stack eines Benutzers
+    FOREIGN KEY (user_id) REFERENCES game_user(id) ON DELETE CASCADE,
+    FOREIGN KEY (card_id) REFERENCES game_card(card_id) ON DELETE CASCADE
+);
 
+-- Tabelle für Package Transaktionen
+CREATE TABLE package_transactions (
+    transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Eindeutige Transaktions-ID
+    user_id UUID NOT NULL,                                     -- Referenz auf den Benutzer
+    package_id UUID NOT NULL,                                  -- Referenz auf das Paket
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,      -- Zeitstempel der Transaktion
+    FOREIGN KEY (user_id) REFERENCES game_user(id) ON DELETE CASCADE,
+    FOREIGN KEY (package_id) REFERENCES game_package(package_id) ON DELETE CASCADE
+);
 

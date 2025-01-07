@@ -1,13 +1,12 @@
 package org.CardGame.database;
 
 import org.CardGame.model.Card;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.*;
 import java.util.List;
 import java.util.UUID;
 
-public class PackageDB {
+public class PackageCreationDB {
     private DBAccess dbAccess = new DBAccess();
     private CardDB cardDb = new CardDB();  // Zugriffsobjekt auf CardDB, um createCardIfNotExists zu nutzen
 
