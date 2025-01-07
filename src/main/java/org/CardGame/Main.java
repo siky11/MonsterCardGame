@@ -2,7 +2,7 @@ package org.CardGame;
 
 import org.CardGame.database.*;
 import org.CardGame.server.HttpServer;
-import org.CardGame.server.PackageTransactionService;
+
 
 public class Main {
     public static void main(String[] args) {
@@ -12,9 +12,10 @@ public class Main {
         UserDB userDB = new UserDB();
         PackageCreationDB packageCreationDB = new PackageCreationDB();
         PackageTransactionDB packageTransactionDB = new PackageTransactionDB();
+        CardDB cardDB = new CardDB();
 
         // Erstelle eine HttpServer-Instanz
-        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB);
+        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB, cardDB);
 
         // Starte den Server über die Instanz
         server.runServer();  // runServer ist jetzt eine Instanzmethode

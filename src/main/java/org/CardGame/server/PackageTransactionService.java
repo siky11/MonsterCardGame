@@ -31,11 +31,13 @@ public class PackageTransactionService {
         // Entfernt das Bearer vor dem Token
         if (requestToken != null && requestToken.startsWith("Bearer ")) {
             requestToken = requestToken.substring(7); // "Bearer " entfernen
+        }else if(requestToken == null){
+            return "{\"error\": \"Unauthorized.\"}";
         }
 
         // Überprüfe, ob der Token gültig ist
         if (!authDB.isValidToken(requestToken)) {
-            return "{\"error\": \"Unauthorized. Invalid or missing token.\"}";  // Token ungültig oder fehlt
+            return "{\"error\": \"Unauthorized.\"}";  // Token ungültig oder fehlt
         }
 
         // Verarbeite die Transaktion

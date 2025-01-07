@@ -38,4 +38,40 @@ public class CardDB {
         }
     }
 
+    public List<Card> getCardsByUsername(String username) throws SQLException {
+        List<Card> cards = new ArrayList<>();
+
+        // SQL-Abfrage, um Karten aus dem Stack des Benutzers basierend auf dem Benutzernamen abzurufen
+        String query = "SELECT gc.card_id, gc.name, gc.damage, gc.element_type, gc.type " +
+                "FROM game_card gc " +
+                "INNER JOIN user_stack us ON gc.card_id = us.card_id " +
+                "INNER JOIN game_user gu ON us.user_id = gu.id " +
+                "WHERE gu.username = ?";
+
+        try (Connection conn = dbAccess.connect();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);  // Username binden
+            ResultSet rs = pstmt.executeQuery();
+
+            // Ergebnisse iterieren und Card-Objekte erstellen
+            while (rs.next()) {
+                UUID cardId = UUID.fromString(rs.getString("card_id"));
+                String cardName = rs.getString("name");
+                int cardDamage = rs.getInt("damage");
+                String elementType = rs.getString("element_type");
+                String typeStr = rs.getString("type");
+
+                // Karte erstellen und zur Liste hinzufügen
+                Card card = new Card(cardId, cardName, cardDamage);
+                card.setType(CardType.valueOf(typeStr.toUpperCase()));  // Setzen des Typs (enum-Wert)
+                card.setElementType(ElementType.valueOf(elementType.toUpperCase()));  // Setzen des ElementTyps (enum-Wert)
+
+                cards.add(card);
+            }
+        }
+
+        return cards;  // Liste der Karten des Benutzers zurückgeben
+    }
+
 }

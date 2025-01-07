@@ -19,7 +19,6 @@ public class UserLoginService {
     public UserLoginService(DBAccess dbAccess, AuthDB authDB) {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
-
     }
 
     public String authenticateUser(HttpRequest request) {

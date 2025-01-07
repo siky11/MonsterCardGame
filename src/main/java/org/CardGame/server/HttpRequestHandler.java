@@ -16,12 +16,14 @@ public class HttpRequestHandler {
     private HttpResponseSender responseSender;
     private PackageCreationService packageCreationService;
     private PackageTransactionService packageTransactionService;
+    private UserStackService userStackService;
 
-    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB) {
+    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB) {
 
         this.userRegistrationService = new UserRegistrationService(dbAccess, userDB);
         this.userLoginService = new UserLoginService(dbAccess, authDB);
         this.packageCreationService = new PackageCreationService(dbAccess, authDB, packageCreationDB);
+        this.userStackService = new UserStackService(dbAccess, authDB, cardDB);
         this.packageTransactionService = new PackageTransactionService(dbAccess, authDB, packageTransactionDB, userDB);
         this.responseSender = new HttpResponseSender();
         this.requestParser = new HttpRequestParser(null, null); // Später in handle() initialisieren
@@ -57,10 +59,16 @@ public class HttpRequestHandler {
         }else if ("POST".equalsIgnoreCase(method) && "/packages".equals(path)){
             responseBody = packageCreationService.startPackageCreation(request);
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
         }else if ("POST".equalsIgnoreCase(method) && "/transactions/packages".equals(path)){
             responseBody = packageTransactionService.startPackageTransaction(request);
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
-        } else {
+
+        } else if("GET".equalsIgnoreCase(method) && "/cards".equals(path)){
+            responseBody = userStackService.getStackCards(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
+        }else {
             responseBody = "{\"error\": \"Not Found\"}";
             status = 404; // Not Found
         }
