@@ -17,15 +17,19 @@ public class HttpRequestHandler {
     private PackageCreationService packageCreationService;
     private PackageTransactionService packageTransactionService;
     private UserStackService userStackService;
-    private UserDeckService userDeckService;
+    private UserShowDeckService userShowDeckService;
+    private UserConfigureDeckService userConfigureDeckService;
+    private UserProfileService userProfileService;
 
-    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB) {
+    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB) {
 
         this.userRegistrationService = new UserRegistrationService(dbAccess, userDB);
         this.userLoginService = new UserLoginService(dbAccess, authDB);
         this.packageCreationService = new PackageCreationService(dbAccess, authDB, packageCreationDB);
         this.userStackService = new UserStackService(dbAccess, authDB, cardDB);
-        this.userDeckService = new UserDeckService(dbAccess, authDB, cardDB);
+        this.userShowDeckService = new UserShowDeckService(dbAccess, authDB, deckDB);
+        this.userConfigureDeckService = new UserConfigureDeckService(dbAccess, deckDB, authDB, userDB);
+        this.userProfileService = new UserProfileService(dbAccess, authDB, userDB);
         this.packageTransactionService = new PackageTransactionService(dbAccess, authDB, packageTransactionDB, userDB);
         this.responseSender = new HttpResponseSender();
         this.requestParser = new HttpRequestParser(null, null); // Später in handle() initialisieren
@@ -71,7 +75,20 @@ public class HttpRequestHandler {
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
 
         }else if("GET".equalsIgnoreCase(method) && "/deck".equals(path)){
-            responseBody = userDeckService.getDeckCards(request);
+            responseBody = userShowDeckService.getDeckCards(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
+        }else if("GET".equalsIgnoreCase(method) && "/deck?format=plain".equals(path)){
+            responseBody = userShowDeckService.getDeckCardsPlain(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
+        }else if("GET".equalsIgnoreCase(method) && path.matches("/users/.+")) {
+            String username = path.split("/")[2]; // Den Benutzernamen aus dem URL-Pfad extrahieren
+            responseBody = userProfileService.getUserProfile(request, username); // Methode, die den Benutzer abrufen wird
+            status = responseBody.startsWith("{\"error\"") ? 400 : 200;
+
+        }else if("PUT".equalsIgnoreCase(method) && "/deck".equals(path)){
+            responseBody = userConfigureDeckService.configureDeck(request);
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
 
         }else {

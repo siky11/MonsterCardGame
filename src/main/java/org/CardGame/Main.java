@@ -13,9 +13,10 @@ public class Main {
         PackageCreationDB packageCreationDB = new PackageCreationDB();
         PackageTransactionDB packageTransactionDB = new PackageTransactionDB();
         CardDB cardDB = new CardDB();
+        DeckDB deckDB = new DeckDB();
 
         // Erstelle eine HttpServer-Instanz
-        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB, cardDB);
+        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB, cardDB, deckDB);
 
         // Starte den Server über die Instanz
         server.runServer();  // runServer ist jetzt eine Instanzmethode

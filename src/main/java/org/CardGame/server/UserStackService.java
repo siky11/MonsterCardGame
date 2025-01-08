@@ -52,6 +52,7 @@ public class UserStackService {
             }
             response.append("\n  ]\n}");
             return response.toString();
+
         } catch (Exception e) {
             return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
         }

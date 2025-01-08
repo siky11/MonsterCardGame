@@ -16,16 +16,18 @@ public class HttpServer {
     private AuthDB authDB;
     private UserDB userDB;
     private CardDB cardDB;
+    private DeckDB deckDB;
     private PackageCreationDB packageCreationDB;
     private PackageTransactionDB packageTransactionDB;
     private static final int PORT = 10001;
 
     // Konstruktordefinition: Hier wird DBAccess injiziert
-    public HttpServer(DBAccess db, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB) {
+    public HttpServer(DBAccess db, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB) {
         this.dbAccess = db;  // DBAccess wird über den Konstruktor übergeben
         this.authDB = authDB;       // AuthDB wird über den Konstruktor übergeben
         this.userDB = userDB;
         this.cardDB = cardDB;
+        this.deckDB = deckDB;
         this.packageCreationDB = packageCreationDB;
         this.packageTransactionDB = packageTransactionDB;
     }
@@ -51,7 +53,7 @@ public class HttpServer {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              OutputStream out = clientSocket.getOutputStream()) {
 
-            HttpRequestHandler requestHandler = new HttpRequestHandler(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB, cardDB);
+            HttpRequestHandler requestHandler = new HttpRequestHandler(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB, cardDB, deckDB);
             requestHandler.handle(in, out, clientSocket);
         } catch (IOException e) {
             System.err.println("IO Exception: " + e.getMessage());

@@ -59,4 +59,42 @@ public class UserDB {
             }
         }
     }
+
+    public User getUserByUsername(String username) {
+        String sql = "SELECT * FROM game_user WHERE username = ?";
+
+        try (Connection conn = dbAccess.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username); // Benutzernamen in die Abfrage einfügen
+            ResultSet rs = stmt.executeQuery();
+
+            // Prüfen, ob der Benutzer gefunden wurde
+            if (rs.next()) {
+                String id = rs.getString("id");
+                String dbUsername = rs.getString("username");
+                String password = rs.getString("password");
+                String bio = rs.getString("bio");
+                String image = rs.getString("image");
+
+                // Benutzerobjekt mit Username und Password erstellen
+                User user = new User(dbUsername, password);
+
+                // Verwende Setter für die restlichen Felder
+                user.setId(id);  // Setze die ID, wenn sie aus der DB kommt
+                user.setElo(rs.getInt("elo"));
+                user.setCoins(rs.getInt("coins"));
+                user.setGamesPlayed(rs.getInt("games_played"));
+                user.setImage(image);
+                user.setBio(bio);
+
+
+                return user; // Benutzer zurückgeben
+            } else {
+                return null;  // Benutzer wurde nicht gefunden
+            }
+        } catch (Exception e) {
+            return null;  // Fehler bei der Datenbankabfrage
+        }
+    }
 }

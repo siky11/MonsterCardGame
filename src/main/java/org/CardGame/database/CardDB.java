@@ -74,40 +74,5 @@ public class CardDB {
         return cards;  // Liste der Karten des Benutzers zurückgeben
     }
 
-    public List<Card> getUserDeck(String username) throws SQLException {
-        List<Card> deck = new ArrayList<>();
-
-        // SQL-Abfrage, um Karten aus dem Deck des Benutzers basierend auf dem Benutzernamen abzurufen
-        String query = "SELECT gc.card_id, gc.name, gc.damage, gc.element_type, gc.type " +
-                "FROM game_card gc " +
-                "INNER JOIN user_deck ud ON gc.card_id = ud.card_id " +
-                "INNER JOIN game_user gu ON ud.user_id = gu.id " +
-                "WHERE gu.username = ?";
-
-        try (Connection conn = dbAccess.connect();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setString(1, username);  // Bind the username to the query
-            ResultSet rs = pstmt.executeQuery();
-
-            // Iterate through the results and create Card objects
-            while (rs.next()) {
-                UUID cardId = UUID.fromString(rs.getString("card_id"));
-                String cardName = rs.getString("name");
-                int cardDamage = rs.getInt("damage");
-                String elementType = rs.getString("element_type");
-                String typeStr = rs.getString("type");
-
-                // Create card and add it to the deck
-                Card card = new Card(cardId, cardName, cardDamage);
-                card.setType(CardType.valueOf(typeStr.toUpperCase()));  // Set card type (enum value)
-                card.setElementType(ElementType.valueOf(elementType.toUpperCase()));  // Set element type (enum value)
-
-                deck.add(card);
-            }
-        }
-
-        return deck;  // Return the list of cards in the user's deck
-    }
 
 }

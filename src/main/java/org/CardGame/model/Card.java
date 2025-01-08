@@ -75,4 +75,9 @@ public class Card {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Card ID: " + card_id + ", Name: " + name + ", Type: " + type + ", Element: " + elementType + ", Damage: " + damage;
+    }
+
 }
