@@ -15,13 +15,13 @@ import java.io.IOException;
 
 public class UserConfigureDeckService {
 
-    private TokenValidator tokenValidator;
-    private DeckDB deckDB;
-    private AuthDB authDB;
-    private UserDB userDB;
+    public TokenValidator tokenValidator;
+    private DeckDBInterface deckDB;
+    private AuthDBInterface authDB;
+    private UserDBInterface userDB;
 
     // Konstruktor, der TokenValidator und CardDB übergibt
-    public UserConfigureDeckService(DBAccess dbAccess, DeckDB deckDB, AuthDB authDB, UserDB userDB) {
+    public UserConfigureDeckService(DeckDBInterface deckDB, AuthDBInterface authDB, UserDBInterface userDB) {
         this.authDB = authDB;
         this.userDB = userDB;
         this.tokenValidator = new TokenValidator(authDB);

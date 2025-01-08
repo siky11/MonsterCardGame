@@ -10,25 +10,25 @@ import java.net.Socket;
 
 public class HttpRequestHandler {
 
-    private HttpRequestParser requestParser;
-    private UserRegistrationService userRegistrationService;
-    private UserLoginService userLoginService;
-    private HttpResponseSender responseSender;
-    private PackageCreationService packageCreationService;
-    private PackageTransactionService packageTransactionService;
-    private UserStackService userStackService;
-    private UserShowDeckService userShowDeckService;
-    private UserConfigureDeckService userConfigureDeckService;
-    private UserProfileService userProfileService;
+    public HttpRequestParser requestParser;
+    public UserRegistrationService userRegistrationService;
+    public UserLoginService userLoginService;
+    public HttpResponseSender responseSender;
+    public PackageCreationService packageCreationService;
+    public PackageTransactionService packageTransactionService;
+    public UserStackService userStackService;
+    public UserShowDeckService userShowDeckService;
+    public UserConfigureDeckService userConfigureDeckService;
+    public UserProfileService userProfileService;
 
     public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB) {
 
         this.userRegistrationService = new UserRegistrationService(dbAccess, userDB);
         this.userLoginService = new UserLoginService(dbAccess, authDB);
-        this.packageCreationService = new PackageCreationService(dbAccess, authDB, packageCreationDB);
+        this.packageCreationService = new PackageCreationService(authDB, packageCreationDB);
         this.userStackService = new UserStackService(dbAccess, authDB, cardDB);
         this.userShowDeckService = new UserShowDeckService(dbAccess, authDB, deckDB);
-        this.userConfigureDeckService = new UserConfigureDeckService(dbAccess, deckDB, authDB, userDB);
+        this.userConfigureDeckService = new UserConfigureDeckService(deckDB, authDB, userDB);
         this.userProfileService = new UserProfileService(dbAccess, authDB, userDB);
         this.packageTransactionService = new PackageTransactionService(dbAccess, authDB, packageTransactionDB, userDB);
         this.responseSender = new HttpResponseSender();

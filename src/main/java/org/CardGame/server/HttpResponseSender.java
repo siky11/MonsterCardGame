@@ -18,13 +18,14 @@ public class HttpResponseSender {
         out.flush();
     }
 
-    private String getStatusMessage(int status) {
+    public String getStatusMessage(int status) {
         switch (status) {
             case 201: return "OK";
             case 400: return "Bad Request";
             case 401: return "Unauthorized";
             case 404: return "Not Found";
             case 409: return "Conflict";
+            case 204: return "No Content";
             default: return "Internal Server Error";
         }
     }

@@ -1,13 +1,15 @@
 package org.CardGame.server;
 
 import org.CardGame.database.AuthDB;
+import org.CardGame.database.AuthDBInterface;
+
 import java.io.IOException;
 
 public class TokenValidator {
 
-    private AuthDB authDB; // Instanz für Authentifizierungsdatenbank
+    public AuthDBInterface authDB; // Instanz für Authentifizierungsdatenbank
 
-    public TokenValidator(AuthDB authDB) {
+    public TokenValidator(AuthDBInterface authDB) {
         this.authDB = authDB;
     }
 

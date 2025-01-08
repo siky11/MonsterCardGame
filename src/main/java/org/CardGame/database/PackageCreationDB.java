@@ -6,11 +6,12 @@ import java.sql.*;
 import java.util.List;
 import java.util.UUID;
 
-public class PackageCreationDB {
+public class PackageCreationDB implements PackageCreationDBInterface {
     private DBAccess dbAccess = new DBAccess();
     private CardDB cardDb = new CardDB();  // Zugriffsobjekt auf CardDB, um createCardIfNotExists zu nutzen
 
     // Paket erstellen und Karten hinzufügen
+    @Override
     public String createPackageAndAddCards(List<Card> cards) {
         String query = "INSERT INTO game_package (package_id) VALUES (DEFAULT) RETURNING package_id";
         String jsonResult = null;
@@ -38,6 +39,7 @@ public class PackageCreationDB {
     }
 
     // Karte zu einem Paket hinzufügen
+    @Override
     public void addCardToPackage(UUID packageId, UUID cardId, Connection conn) throws SQLException {
         String query = "INSERT INTO package_cards (package_id, card_id) VALUES (?, ?)";
 

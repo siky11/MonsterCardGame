@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class DeckDB {
+public class DeckDB implements DeckDBInterface {
 
     private DBAccess dbAccess = new DBAccess();
 
-
+    @Override
     public List<Card> getUserDeck(String username) throws SQLException {
         List<Card> deck = new ArrayList<>();
 
@@ -51,6 +51,7 @@ public class DeckDB {
         return deck;  // Return the list of cards in the user's deck
     }
 
+    @Override
     public String setUserDeck(UUID userID, List<UUID> cardIds, String username) throws SQLException {
         final int MAX_CARDS_ALLOWED = 4; // Maximale Anzahl an Karten im Deck
         final String addCardQuery = "INSERT INTO user_deck (user_id, card_id) VALUES (?, ?)";
@@ -107,8 +108,8 @@ public class DeckDB {
         return jsonResult;
     }
 
-
-    private void clearUserDeck(UUID userID, Connection conn) throws SQLException {
+    @Override
+    public void clearUserDeck(UUID userID, Connection conn) throws SQLException {
         final String deleteDeckQuery = "DELETE FROM user_deck WHERE user_id = ?";
 
         try (PreparedStatement deletePstmt = conn.prepareStatement(deleteDeckQuery)) {

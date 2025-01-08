@@ -16,7 +16,7 @@ public class Main {
         DeckDB deckDB = new DeckDB();
 
         // Erstelle eine HttpServer-Instanz
-        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB, cardDB, deckDB);
+        HttpServer server = new HttpServer(dbAccess, authDB, userDB, packageCreationDB, packageTransactionDB, cardDB, deckDB, 20);
 
         // Starte den Server über die Instanz
         server.runServer();  // runServer ist jetzt eine Instanzmethode

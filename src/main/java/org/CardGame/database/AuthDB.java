@@ -4,11 +4,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.*;
 
-public class AuthDB {
+public class AuthDB implements AuthDBInterface {
 
     private DBAccess dbAccess = new DBAccess();
 
     // Methode zur Benutzeranmeldung
+    @Override
     public String loginUser(String username, String password) throws SQLException {
         String token = null;
         String query = "SELECT token FROM game_user WHERE username = ? AND password = ?";
@@ -39,6 +40,7 @@ public class AuthDB {
     }
 
     // Methode zum Speichern des Tokens für den Benutzer in der Datenbank
+    @Override
     public void saveTokenForUser(String username, String token) throws SQLException {
         String updateQuery = "UPDATE game_user SET token = ? WHERE username = ?";
 
@@ -52,6 +54,7 @@ public class AuthDB {
     }
 
     // Neue Methode, die das Token für einen Benutzer zurückgibt
+    @Override
     public String getTokenForUser(String username) throws SQLException {
         String token = null;
         String query = "SELECT token FROM game_user WHERE username = ?";
@@ -69,6 +72,7 @@ public class AuthDB {
         return token;  // Gibt das Token zurück (oder null, wenn der Benutzer nicht gefunden wird)
     }
 
+    @Override
     public String extractUsernameFromToken(String requestToken) throws IOException {
         try {
             // Token format: username-mtcgToken, split by "-"
@@ -91,6 +95,7 @@ public class AuthDB {
     }
 
     // Überprüfen, ob der Token für den spezifischen Benutzer gültig ist
+    @Override
     public boolean isValidToken(String requestToken) {
         try {
             // Extrahiert den Benutzernamen aus dem Token (dies könnte anders aussehen, je nachdem, wie dein Token aufgebaut ist)

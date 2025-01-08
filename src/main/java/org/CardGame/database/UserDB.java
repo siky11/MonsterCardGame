@@ -7,10 +7,11 @@ import java.sql.*;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class UserDB {
+public class UserDB implements UserDBInterface {
 
     private DBAccess dbAccess = new DBAccess();
 
+    @Override
     public boolean userExists(String username) throws SQLException{
         String sql = "SELECT COUNT(*) FROM game_user WHERE username = ?";
         try (Connection conn = dbAccess.connect();
@@ -26,6 +27,7 @@ public class UserDB {
         return false; // Standardmäßig false, wenn ein Fehler auftritt
     }
 
+    @Override
     public boolean createUser(User user) throws SQLException {
         String sql = "INSERT INTO game_user (username, password, elo, games_played, coins) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = dbAccess.connect();
@@ -44,6 +46,7 @@ public class UserDB {
         }
     }
 
+    @Override
     public UUID getUserId(String username) throws SQLException {
         String query = "SELECT id FROM game_user WHERE username = ?";
         try (Connection conn = dbAccess.connect();
@@ -60,6 +63,7 @@ public class UserDB {
         }
     }
 
+    @Override
     public User getUserByUsername(String username) {
         String sql = "SELECT * FROM game_user WHERE username = ?";
 
@@ -98,6 +102,7 @@ public class UserDB {
         }
     }
 
+    @Override
     public boolean updateUser(User user) {
         String updateQuery = "UPDATE game_user SET bio = ?, image = ? WHERE username = ?";
 

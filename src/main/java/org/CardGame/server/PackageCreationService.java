@@ -1,8 +1,6 @@
 package org.CardGame.server;
 
-import org.CardGame.database.AuthDB;
-import org.CardGame.database.DBAccess;
-import org.CardGame.database.PackageCreationDB;
+import org.CardGame.database.*;
 import org.CardGame.model.Card;
 import org.CardGame.model.HttpRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,13 +10,11 @@ import java.util.List;
 
 public class PackageCreationService {
 
-    private DBAccess dbAccess; // Verwaltung von Datenbankinteraktionen
-    private PackageCreationDB packageCreationDB; // Spezielle DB-Klasse für die Paketverwaltung
-    private AuthDB authDB; // AuthDB für Authentifizierungsprüfungen
+    private PackageCreationDBInterface packageCreationDB; // Spezielle DB-Klasse für die Paketverwaltung
+    private AuthDBInterface authDB; // AuthDB für Authentifizierungsprüfungen
 
     // Konstruktor mit Dependency Injection für DB und ObjectMapper
-    public PackageCreationService(DBAccess dbAccess, AuthDB authDB, PackageCreationDB packageCreationDB) {
-        this.dbAccess = dbAccess;
+    public PackageCreationService( AuthDBInterface authDB, PackageCreationDBInterface packageCreationDB) {
         this.packageCreationDB = packageCreationDB;
         this.authDB = authDB;
     }
