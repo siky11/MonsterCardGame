@@ -32,7 +32,6 @@ public class UserConfigureDeckService {
 
         String requestToken = request.getHeaders().get("Authorization");
 
-
         try {
 
             // Benutzernamen aus dem Token extrahieren

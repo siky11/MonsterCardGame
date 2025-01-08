@@ -97,4 +97,37 @@ public class UserDB {
             return null;  // Fehler bei der Datenbankabfrage
         }
     }
+
+    public boolean updateUser(User user) {
+        String updateQuery = "UPDATE game_user SET bio = ?, image = ? WHERE username = ?";
+
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            throw new IllegalArgumentException("Username darf nicht leer sein.");
+        }
+
+        // Logge die Werte vor dem Update, um sicherzustellen, dass die richtigen Daten übergeben werden
+        System.out.println("Profil Update gestartet:");
+        System.out.println("Username: " + user.getUsername());
+        System.out.println("Bio: " + (user.getBio() != null ? user.getBio() : "Kein Bio gesetzt"));
+        System.out.println("Image: " + (user.getImage() != null ? user.getImage() : "Kein Bild gesetzt"));
+
+
+        try (Connection conn = dbAccess.connect();
+             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+
+            // Standardwerte setzen, falls Bio oder Bild null sind
+            pstmt.setString(5, user.getBio());
+            pstmt.setString(6, user.getImage());
+            pstmt.setString(2, user.getUsername());
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0; // Erfolgreiches Update, wenn mindestens eine Zeile betroffen ist
+        } catch (SQLException e) {
+            System.err.println("Fehler beim Aktualisieren des Benutzers: " + e.getMessage());
+            System.err.println("SQL State: " + e.getSQLState());
+            System.err.println("Error Code: " + e.getErrorCode());
+            System.err.println("Fehler beim Aktualisieren des Benutzers: " + e.getMessage());
+            return false;
+        }
+    }
 }

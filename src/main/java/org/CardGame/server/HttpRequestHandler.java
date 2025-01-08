@@ -91,6 +91,11 @@ public class HttpRequestHandler {
             responseBody = userConfigureDeckService.configureDeck(request);
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
 
+        }else if("PUT".equalsIgnoreCase(method) && path.matches("/users/.+")) {
+            String username = path.split("/")[2];
+            responseBody = userProfileService.editProfile(request, username);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
         }else {
             responseBody = "{\"error\": \"Not Found\"}";
             status = 404; // Not Found

@@ -1,8 +1,10 @@
 package org.CardGame.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.CardGame.database.*;
 import org.CardGame.model.HttpRequest;
 import org.CardGame.model.User;
+
 
 public class UserProfileService {
 
@@ -45,8 +47,8 @@ public class UserProfileService {
 
             // Benutzername, Elo, Coins und Spiele gespielt
             jsonResponse.append("\"username\": \"").append(user.getUsername()).append("\", ")
-                        .append("\"bio\": ").append(user.getBio()).append(", ")
-                        .append("\"image\": ").append(user.getImage()).append(", ");
+                    .append("\"bio\": ").append(user.getBio()).append(", ")
+                    .append("\"image\": ").append(user.getImage()).append(", ");
             // JSON-Antwort abschließen
             jsonResponse.append("}");
 
@@ -56,5 +58,34 @@ public class UserProfileService {
         } catch (Exception e) {
             return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
         }
+    }
+
+    public String editProfile(HttpRequest request, String username) {
+        String requestToken = request.getHeaders().get("Authorization");
+        String requestBody = request.getBody();
+
+        try {
+            // Benutzername aus dem Token extrahieren und validieren
+            String validatedUsername = tokenValidator.validate(requestToken);
+
+            // Überprüfen, ob der angeforderte Benutzername mit dem durch das Token validierten übereinstimmt
+            if (!validatedUsername.equals(username)) {
+                return "{\"error\": \"Unauthorized\"}";  // Zugriff verweigert, wenn der Benutzername nicht übereinstimmt
+            }
+
+            // JSON-Body in ein UserProfile-Objekt umwandeln
+            ObjectMapper objectMapper = new ObjectMapper();
+            User user = objectMapper.readValue(requestBody, User.class);
+
+            boolean success = userDB.updateUser(user);
+            if (success) {
+                return "{\"message\": \"Profile updated successfully.\"}";
+            } else {
+                return "{\"error\": \"Profile update failed.\"}";
+            }
+        } catch (Exception e) {
+            return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
+        }
+
     }
 }

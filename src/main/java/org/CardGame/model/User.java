@@ -1,32 +1,44 @@
 package org.CardGame.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class User {
     private String id; // Neue ID für den Benutzer
     @JsonProperty("Username")
+    @JsonAlias("Name")
     private String username;
     @JsonProperty("Password")
     private String password;
     private int elo;
     private int gamesPlayed;
     private int coins;
+    @JsonProperty("Bio")
     private String bio;
+    @JsonProperty("Image")
     private String image;
 
-    // Konstruktor mit Parametern, bei dem alle Felder übergeben werden
+    // Standardkonstruktor für JSON Deserialization
+    public User() {
+        // Default-Werte für Felder
+        this.id = null;
+        this.elo = 1000; // Initial ELO für jeden neuen Benutzer
+        this.gamesPlayed = 0;
+        this.coins = 20;
+        this.bio = "";
+        this.image = "";
+    }
+
+    // Konstruktor mit Pflichtfeldern
     @JsonCreator
-    public User(@JsonProperty("Username") String username,
-                @JsonProperty("Password") String password ) {
-        this.id = id;
+    public User(
+            @JsonProperty("Username") String username,
+            @JsonProperty("Password") String password
+    ) {
+        this(); // Ruft den Standardkonstruktor auf
         this.username = username;
         this.password = password;
-        this.elo = 1000; // Verwende 1000 als Startwert, falls ELO 0 oder negativ ist
-        this.gamesPlayed = 0; // Spiele nur auf 0 oder größer setzen
-        this.coins = 20;
-        this.bio = bio;
-        this.image = image;
     }
 
     public String getId() {

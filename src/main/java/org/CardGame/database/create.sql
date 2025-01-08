@@ -8,8 +8,8 @@ CREATE TABLE game_user (
     elo INT NOT NULL DEFAULT 1000,        -- Elo-Score, Standardwert ist 1000
     games_played INT NOT NULL DEFAULT 0, -- Anzahl der gespielten Spiele, Standardwert ist 0
     coins INT NOT NULL DEFAULT 20,       -- Coins, Standardwert ist 20
-    bio VARCHAR(255) NOT NULL,
-    image VARCHAR(255) NOT NULL,
+    bio VARCHAR(255) DEFAULT '-',
+    image VARCHAR(255) DEFAULT '-',
     token VARCHAR(255)                   -- Optionales Feld für Token
 );
 
