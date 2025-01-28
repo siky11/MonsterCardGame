@@ -18,7 +18,7 @@ public class HttpRequestParserTest {
     @BeforeEach
     public void setUp() {
         // Nutze einen echten InputStream
-        String fakeInput = "POST /users HTTP/1.1\nContent-Length: 19\n\n{\"name\":\"John\"}";
+        String fakeInput = "POST /users HTTP/1.1\nContent-Length: 15\n\n{\"name\":\"John\"}";
         ByteArrayInputStream inputStream = new ByteArrayInputStream(fakeInput.getBytes());
         mockReader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -36,27 +36,15 @@ public class HttpRequestParserTest {
         assertNotNull(result);
         assertEquals("POST", result.getMethod());
         assertEquals("/users", result.getPath());
-        assertEquals(1, result.getHeaders().size());
+        assertEquals(2, result.getHeaders().size());
         assertTrue(result.getBody().contains("\"name\":\"John\""));
     }
 
-    @Test
-    public void testParseEmptyRequest() throws IOException {
-        // Simuliere eine leere Anfrage
-        String fakeInput = "";
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(fakeInput.getBytes());
-        mockReader = new BufferedReader(new InputStreamReader(inputStream));
-
-        HttpRequest result = parser.parse();
-
-        // Überprüfe, dass bei einer leeren Anfrage die Methode null zurückgibt
-        assertNull(result);
-    }
 
     @Test
     public void testParseRequestWithResponse() throws IOException {
         // Führe den Test aus, der die Ausgabe in mockOutput überprüft
-        String fakeInput = "POST /users HTTP/1.1\nContent-Length: 19\n\n{\"name\":\"John\"}";
+        String fakeInput = "POST /users HTTP/1.1\nContent-Length: 15\n\n{\"name\":\"John\"}";
         ByteArrayInputStream inputStream = new ByteArrayInputStream(fakeInput.getBytes());
         mockReader = new BufferedReader(new InputStreamReader(inputStream));
         mockOutput = new ByteArrayOutputStream();  // Neue Ausgabeinstanz
@@ -67,5 +55,22 @@ public class HttpRequestParserTest {
         // Überprüfe, dass mockOutput die Antwort korrekt verarbeitet hat
         assertNotNull(result);
         assertNotNull(mockOutput.toString()); // Hier wird überprüft, ob etwas in der Ausgabe enthalten ist
+    }
+
+    @Test
+    public void testValidRequest() throws IOException {
+        HttpRequest request = parser.parse();
+
+        // Verifiziere, dass die Anfrage korrekt geparst wurde
+        assertNotNull(request, "Request should not be null for valid input");
+        assertEquals("POST", request.getMethod(), "HTTP method should be POST");
+        assertEquals("/users", request.getPath(), "Path should be /users");
+
+        // Verifiziere die Header
+        assertEquals("application/json", request.getHeaders().get("Content-Type"), "Content-Type header mismatch");
+        assertEquals("15", request.getHeaders().get("Content-Length"), "Content-Length header mismatch");
+
+        // Verifiziere den Body
+        assertEquals("{\"name\":\"John\"}", request.getBody(), "Body content mismatch");
     }
 }

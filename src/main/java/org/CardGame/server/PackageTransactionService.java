@@ -7,6 +7,9 @@ import org.CardGame.database.AuthDB;
 import org.CardGame.database.DBAccess;
 import org.CardGame.model.Package;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import java.util.UUID;
 
 public class PackageTransactionService {
@@ -15,6 +18,7 @@ public class PackageTransactionService {
     private PackageTransactionDB packageTransactionDB; // Spezielle DB-Klasse für Pakettransaktionen
     private AuthDB authDB; // AuthDB für Authentifizierungsprüfungen
     private UserDB userDB;
+    private TokenValidator tokenValidator;
 
     // Konstruktor mit Dependency Injection für DB und andere Services
     public PackageTransactionService(DBAccess dbAccess, AuthDB authDB, PackageTransactionDB packageTransactionDB, UserDB userDB) {
@@ -22,22 +26,25 @@ public class PackageTransactionService {
         this.packageTransactionDB = packageTransactionDB;
         this.authDB = authDB;
         this.userDB = userDB;
+        this.tokenValidator = new TokenValidator(authDB, userDB);
     }
 
-    // Methode zum Starten einer Pakettransaktion
     public String startPackageTransaction(HttpRequest request) {
         String requestToken = request.getHeaders().get("Authorization");  // Token aus den Request-Headers holen
 
-        // Entfernt das Bearer vor dem Token
-        if (requestToken != null && requestToken.startsWith("Bearer ")) {
-            requestToken = requestToken.substring(7); // "Bearer " entfernen
-        }else if(requestToken == null){
-            return "{\"error\": \"Unauthorized.\"}";
-        }
+        try {
+            String username = authDB.extractUsernameFromToken(requestToken);
+            // Verwende validate Methode, um Token und Benutzer zu überprüfen
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
+            }
 
-        // Überprüfe, ob der Token gültig ist
-        if (!authDB.isValidToken(requestToken)) {
-            return "{\"error\": \"Unauthorized.\"}";  // Token ungültig oder fehlt
+
+        }catch (IllegalArgumentException e) {
+            // Fehler bei der Tokenüberprüfung oder ungültiger Benutzername
+            return "{\"error\": \"" + e.getMessage() + "\"}";
+        }catch (IOException e){
+            return "{\"error\": \"" + e.getMessage() + "\"}";
         }
 
         // Verarbeite die Transaktion
@@ -66,7 +73,7 @@ public class PackageTransactionService {
             }
 
             // Hole ein vorhandenes Paket aus der Datenbank (hier Beispiel, erste verfügbare Zeile)
-            Package packageCards = packageTransactionDB.getRandomPackageCards(); // Beispielhafte Abfrage
+            Package packageCards = packageTransactionDB.getPackageCards(); // Beispielhafte Abfrage
 
             if (packageCards == null || packageCards.getCards().isEmpty()) {
                 // Falls das Paket leer ist oder keine Karten enthält

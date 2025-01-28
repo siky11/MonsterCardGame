@@ -4,6 +4,8 @@ import org.CardGame.model.User;
 
 import java.sql.SQLException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -80,6 +82,7 @@ public class UserDB implements UserDBInterface {
                 String password = rs.getString("password");
                 String bio = rs.getString("bio");
                 String image = rs.getString("image");
+                String name = rs.getString("name");
 
                 // Benutzerobjekt mit Username und Password erstellen
                 User user = new User(dbUsername, password);
@@ -91,6 +94,7 @@ public class UserDB implements UserDBInterface {
                 user.setGamesPlayed(rs.getInt("games_played"));
                 user.setImage(image);
                 user.setBio(bio);
+                user.setName(name);
 
 
                 return user; // Benutzer zurückgeben
@@ -103,16 +107,16 @@ public class UserDB implements UserDBInterface {
     }
 
     @Override
-    public boolean updateUser(User user) {
-        String updateQuery = "UPDATE game_user SET bio = ?, image = ? WHERE username = ?";
+    public boolean updateUser(User user, String username) {
+        String updateQuery = "UPDATE game_user SET name = ?, bio = ?, image = ? WHERE username = ?";
 
-        if (user.getUsername() == null || user.getUsername().isEmpty()) {
-            throw new IllegalArgumentException("Username darf nicht leer sein.");
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Der ursprüngliche Username darf nicht leer sein.");
         }
 
         // Logge die Werte vor dem Update, um sicherzustellen, dass die richtigen Daten übergeben werden
         System.out.println("Profil Update gestartet:");
-        System.out.println("Username: " + user.getUsername());
+        System.out.println("Profilname: " + user.getName());
         System.out.println("Bio: " + (user.getBio() != null ? user.getBio() : "Kein Bio gesetzt"));
         System.out.println("Image: " + (user.getImage() != null ? user.getImage() : "Kein Bild gesetzt"));
 
@@ -120,10 +124,11 @@ public class UserDB implements UserDBInterface {
         try (Connection conn = dbAccess.connect();
              PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
 
-            // Standardwerte setzen, falls Bio oder Bild null sind
-            pstmt.setString(5, user.getBio());
-            pstmt.setString(6, user.getImage());
-            pstmt.setString(2, user.getUsername());
+            // Setze die neuen Werte
+            pstmt.setString(1, user.getName()); // Neuer Profilname
+            pstmt.setString(2, user.getBio());     // Neue Bio
+            pstmt.setString(3, user.getImage());   // Neues Bild
+            pstmt.setString(4, username);   // Ursprünglicher Username
 
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0; // Erfolgreiches Update, wenn mindestens eine Zeile betroffen ist
@@ -134,5 +139,28 @@ public class UserDB implements UserDBInterface {
             System.err.println("Fehler beim Aktualisieren des Benutzers: " + e.getMessage());
             return false;
         }
+    }
+
+    // Funktion zum Abrufen aller Benutzer mit ELO-Werten und Rückgabe einer sortierten Liste
+    public List<String[]> getAllUserEloSorted() throws SQLException {
+        List<String[]> userEloList = new ArrayList<>();
+        String query = "SELECT name, elo FROM game_user ORDER BY elo DESC";
+
+        try (Connection conn = dbAccess.connect();  // Datenbankverbindung herstellen
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            ResultSet rs = pstmt.executeQuery();
+
+            // Durchlaufe alle Resultate und speichere sie in einem String-Array (Username, ELO)
+            while (rs.next()) {
+                String username = rs.getString("name");
+                int elo = rs.getInt("elo");
+
+                // Füge das Paar (Username, ELO) zur Liste hinzu
+                userEloList.add(new String[]{username, String.valueOf(elo)});
+            }
+        }
+
+        return userEloList;  // Rückgabe der sortierten Liste der Benutzer und deren ELO-Werte
     }
 }

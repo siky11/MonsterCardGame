@@ -20,6 +20,7 @@ public class HttpResponseSender {
 
     public String getStatusMessage(int status) {
         switch (status) {
+            case 200:return "Success";
             case 201: return "OK";
             case 400: return "Bad Request";
             case 401: return "Unauthorized";

@@ -7,8 +7,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class User {
     private String id; // Neue ID für den Benutzer
     @JsonProperty("Username")
-    @JsonAlias("Name")
     private String username;
+    @JsonProperty("Name")
+    private String name;
     @JsonProperty("Password")
     private String password;
     private int elo;
@@ -23,11 +24,12 @@ public class User {
     public User() {
         // Default-Werte für Felder
         this.id = null;
-        this.elo = 1000; // Initial ELO für jeden neuen Benutzer
+        this.elo = 100; // Initial ELO für jeden neuen Benutzer
         this.gamesPlayed = 0;
         this.coins = 20;
-        this.bio = "";
-        this.image = "";
+        this.bio = "-";
+        this.image = "-";
+        this.name = "-";
     }
 
     // Konstruktor mit Pflichtfeldern
@@ -95,4 +97,8 @@ public class User {
     public String getImage() { return image; }
 
     public void setImage(String image) { this.image = image; }
+
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
 }

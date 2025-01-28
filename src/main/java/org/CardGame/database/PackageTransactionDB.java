@@ -83,11 +83,11 @@ public class PackageTransactionDB {
     }
 
     // Methode, die ein zufälliges Paket mit zugehörigen Karten aus der Datenbank abruft
-    public Package getRandomPackageCards() throws SQLException {
+    public Package getPackageCards() throws SQLException {
         List<Card> cards = new ArrayList<>();
 
-        // 1. Zufälliges Paket aus der Pakete-Tabelle auswählen
-        String packageQuery = "SELECT package_id FROM game_package ORDER BY RANDOM() LIMIT 1";
+        // 1. Erstes Paket aus der Pakete-Tabelle auswählen
+        String packageQuery = "SELECT package_id FROM game_package LIMIT 1";
         UUID packageId = null;
 
         try (Connection conn = dbAccess.connect();

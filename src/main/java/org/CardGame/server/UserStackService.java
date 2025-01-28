@@ -11,21 +11,26 @@ public class UserStackService {
     private CardDB cardDB; // Spezielle DB-Klasse für Pakettransaktionen
     private AuthDB authDB; // AuthDB für Authentifizierungsprüfungen
     private TokenValidator tokenValidator;
+    private UserDB userDB;
 
     // Konstruktor mit Dependency Injection für DB und andere Services
-    public UserStackService(DBAccess dbAccess, AuthDB authDB, CardDB cardDB) {
+    public UserStackService(DBAccess dbAccess, AuthDB authDB, CardDB cardDB, UserDB userDB) {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
         this.cardDB = cardDB;
-        this.tokenValidator = new TokenValidator(authDB);
+        this.tokenValidator = new TokenValidator(authDB, userDB);
     }
 
     public String getStackCards(HttpRequest request) {
         String requestToken = request.getHeaders().get("Authorization");  // Token aus den Request-Headers holen
 
         try {
-            // Extrahiere den Benutzernamen aus dem Token
-            String username = tokenValidator.validate(requestToken);
+            String username = authDB.extractUsernameFromToken(requestToken);
+            // Benutzernamen aus dem Token extrahieren
+
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
+            }
 
             // Holen der Benutzerkarten
             List<Card> userCards = cardDB.getUserStack(username);

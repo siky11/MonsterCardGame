@@ -19,7 +19,7 @@ public class HttpRequestParser {
         this.input = input;
         this.output = output;
         this.headers = new HttpHeader();
-        this.responseSender = new HttpResponseSender();
+        this.responseSender = responseSender != null ? responseSender : new HttpResponseSender();
     }
 
     public HttpRequest parse() throws IOException {
@@ -30,6 +30,10 @@ public class HttpRequestParser {
         }
 
         String[] parts = requestLine.split(" ");
+        if (parts.length < 2) { // Prüfe, ob mindestens 2 Elemente vorhanden sind
+            responseSender.send(output, "{\"error\": \"Invalid request line\"}", 400);
+            return null;
+        }
         String method = parts[0];  // HTTP Methode, z.B. POST
         String path = parts[1];    // Pfad, z.B. /users
 

@@ -65,7 +65,6 @@ public class DeckDB implements DeckDBInterface {
                 return "{\"error\": \"Request must contain exactly " + MAX_CARDS_ALLOWED + " cards.\"}";
             }
 
-            /*
 
             List<Card> cards = cardDB.getUserStack(username);
             for (Card card : cards) {
@@ -81,7 +80,7 @@ public class DeckDB implements DeckDBInterface {
                 }
             }
 
-             */
+
             // 3. Lösche das bestehende Deck, falls eines vorhanden ist
             clearUserDeck(userID, conn);
 
@@ -118,7 +117,7 @@ public class DeckDB implements DeckDBInterface {
         }
     }
 
-    /*
+
     private boolean isCardInUserStack(UUID userID, UUID cardId, Connection conn) throws SQLException {
         String checkCardQuery = "SELECT EXISTS (SELECT 1 FROM user_stack WHERE user_id = ? AND card_id = ?)";
 
@@ -137,5 +136,5 @@ public class DeckDB implements DeckDBInterface {
         }
         return false; // Karte nicht im Stack, falls keine Zeilen im ResultSet vorhanden sind
     }
-    */
+
 }

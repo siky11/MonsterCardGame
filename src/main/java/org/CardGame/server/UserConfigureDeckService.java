@@ -24,7 +24,7 @@ public class UserConfigureDeckService {
     public UserConfigureDeckService(DeckDBInterface deckDB, AuthDBInterface authDB, UserDBInterface userDB) {
         this.authDB = authDB;
         this.userDB = userDB;
-        this.tokenValidator = new TokenValidator(authDB);
+        this.tokenValidator = new TokenValidator(authDB, userDB);
         this.deckDB = deckDB;
     }
 
@@ -33,9 +33,12 @@ public class UserConfigureDeckService {
         String requestToken = request.getHeaders().get("Authorization");
 
         try {
-
+            String username = authDB.extractUsernameFromToken(requestToken);
             // Benutzernamen aus dem Token extrahieren
-            String username = tokenValidator.validate(requestToken);
+
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
+            }
 
             // Karten-IDs aus dem JSON-Request parsen
             List<UUID> cardIds = parseCardIds(request);
@@ -59,6 +62,8 @@ public class UserConfigureDeckService {
             }
         } catch (SQLException e) {
             return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
+        }catch (IOException e){
+            return "{\"error\": \"" + e.getMessage() + "\"}";
         }
     }
 

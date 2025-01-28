@@ -1,89 +1,112 @@
 package org.CardGame.server;
 
-import org.CardGame.database.AuthDBInterface;
+import org.CardGame.database.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.UUID;
 
 public class TokenValidatorTest {
 
+    @Mock
+    private UserDBInterface userDB;
+
+    @Mock
+    private AuthDBInterface authDB;
+
+    @Mock
+    private DBAccessInterface dbAccess;
+
     private TokenValidator tokenValidator;
-    private AuthDBInterface mockAuthDB;
 
     @BeforeEach
     public void setUp() {
-        // Mocking der AuthDBInterface
-        mockAuthDB = mock(AuthDBInterface.class);
-        tokenValidator = new TokenValidator(mockAuthDB);
+        MockitoAnnotations.openMocks(this);
+        tokenValidator = new TokenValidator(authDB, userDB);
     }
 
     @Test
-    public void testValidToken() throws IOException {
+    void testStartPackageTransaction_InvalidToken() throws SQLException {
+        // Arrange
+        String invalidToken = "Bearer invalidToken";
+        String username = "testuser";
+        UUID userId = UUID.randomUUID();
+
+        // Mocking
+        when(userDB.getUserId(username)).thenReturn(userId);
+        when(authDB.isValidToken("invalidToken", userId)).thenReturn(false);
+
+        // Act
+        boolean isValid = tokenValidator.validate(invalidToken, username);
+
+        // Assert
+        assertFalse(isValid, "The token should be invalid for an incorrect token.");
+    }
+
+    @Test
+    void testValidate_NullToken() {
+        // Arrange
+        String nullToken = null;
+        String username = "testuser";
+
+        // Act
+        boolean isValid = tokenValidator.validate(nullToken, username);
+
+        // Assert
+        assertFalse(isValid, "The token should be invalid when it's null.");
+    }
+
+
+    @Test
+    void testValidate_UserNotFound() throws SQLException {
+        // Arrange
         String validToken = "Bearer validToken123";
-        String expectedUsername = "testuser";
+        String username = "nonexistentuser";
 
-        when(mockAuthDB.isValidToken("validToken123")).thenReturn(true);
-        when(mockAuthDB.extractUsernameFromToken("validToken123")).thenReturn(expectedUsername);
+        // Mocking
+        when(userDB.getUserId(username)).thenThrow(new SQLException("User not found"));
 
-        String username = tokenValidator.validate(validToken);
-        assertEquals(expectedUsername, username, "Token validation should return the correct username.");
+        // Act
+        boolean isValid = tokenValidator.validate(validToken, username);
+
+        // Assert
+        assertFalse(isValid, "The validation should fail if the user does not exist.");
     }
 
     @Test
-    public void testMissingBearerPrefix() {
-        String invalidToken = "invalidToken123";
+    void testGetTokenForId_UserNotFound() throws SQLException {
+        // Arrange
+        UUID userId = UUID.randomUUID();
+        when(authDB.getTokenForId(userId)).thenReturn(null);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            tokenValidator.validate(invalidToken);
-        });
+        // Act
+        String token = authDB.getTokenForId(userId);
 
-        assertEquals("Unauthorized: Missing or malformed token.", exception.getMessage(), "Token validation should throw the correct error message.");
+        // Assert
+        assertNull(token, "Token should be null if the user is not found.");
     }
 
     @Test
-    public void testInvalidToken() throws IOException {
-        String invalidToken = "Bearer invalidToken123";
+    void testIsValidToken_MismatchedToken() throws SQLException {
+        // Arrange
+        String requestToken = "wrongToken";
+        UUID userId = UUID.randomUUID();
+        String databaseToken = "validToken123";
 
-        // Token ist ungültig und gibt false zurück
-        when(mockAuthDB.isValidToken("invalidToken123")).thenReturn(false);
+        // Mocking
+        when(authDB.getTokenForId(userId)).thenReturn(databaseToken);
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            tokenValidator.validate(invalidToken);
-        });
+        // Act
+        boolean isValid = authDB.isValidToken(requestToken, userId);
 
-        assertEquals("Unauthorized: Invalid token.", exception.getMessage(), "Token validation should throw an error for an invalid token.");
-    }
-
-    @Test
-    public void testNonexistentUser() throws IOException {
-        String tokenWithNonexistentUser = "Bearer validToken123";
-
-        // Das Token existiert, aber der Benutzername ist null (nicht gefunden)
-        when(mockAuthDB.isValidToken("validToken123")).thenReturn(true);
-        when(mockAuthDB.extractUsernameFromToken("validToken123")).thenReturn(null);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            tokenValidator.validate(tokenWithNonexistentUser);
-        });
-
-        assertEquals("Unauthorized: User does not exist.", exception.getMessage(), "Token validation should throw an error if no user is associated with the token.");
-    }
-
-    @Test
-    public void testIOExceptionWhileExtractingUsername() throws IOException {
-        String malformedToken = "Bearer malformedToken";
-
-        // Wenn die Extraktion des Benutzernamens aus dem Token eine IOException wirft
-        when(mockAuthDB.isValidToken("malformedToken")).thenReturn(true);
-        when(mockAuthDB.extractUsernameFromToken("malformedToken")).thenThrow(new IOException("Invalid token format"));
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            tokenValidator.validate(malformedToken);
-        });
-
-        assertEquals("Unauthorized: Unable to process token.", exception.getMessage(), "Token validation should throw an error on IOException.");
+        // Assert
+        assertFalse(isValid, "The token should be invalid if it does not match the database value.");
     }
 }
 

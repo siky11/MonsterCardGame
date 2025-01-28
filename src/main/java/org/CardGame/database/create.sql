@@ -5,11 +5,12 @@ CREATE TABLE game_user (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    elo INT NOT NULL DEFAULT 1000,        -- Elo-Score, Standardwert ist 1000
+    elo INT NOT NULL DEFAULT 100,        -- Elo-Score, Standardwert ist 1000
     games_played INT NOT NULL DEFAULT 0, -- Anzahl der gespielten Spiele, Standardwert ist 0
     coins INT NOT NULL DEFAULT 20,       -- Coins, Standardwert ist 20
     bio VARCHAR(255) DEFAULT '-',
     image VARCHAR(255) DEFAULT '-',
+    name VARCHAR(255)  DEFAULT '-',
     token VARCHAR(255)                   -- Optionales Feld für Token
 );
 

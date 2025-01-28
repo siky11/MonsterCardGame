@@ -26,8 +26,8 @@ public class HttpRequestHandler {
         this.userRegistrationService = new UserRegistrationService(dbAccess, userDB);
         this.userLoginService = new UserLoginService(dbAccess, authDB);
         this.packageCreationService = new PackageCreationService(authDB, packageCreationDB);
-        this.userStackService = new UserStackService(dbAccess, authDB, cardDB);
-        this.userShowDeckService = new UserShowDeckService(dbAccess, authDB, deckDB);
+        this.userStackService = new UserStackService(dbAccess, authDB, cardDB, userDB);
+        this.userShowDeckService = new UserShowDeckService(dbAccess, authDB, deckDB, userDB);
         this.userConfigureDeckService = new UserConfigureDeckService(deckDB, authDB, userDB);
         this.userProfileService = new UserProfileService(dbAccess, authDB, userDB);
         this.packageTransactionService = new PackageTransactionService(dbAccess, authDB, packageTransactionDB, userDB);
@@ -87,6 +87,14 @@ public class HttpRequestHandler {
             responseBody = userProfileService.getUserProfile(request, username); // Methode, die den Benutzer abrufen wird
             status = responseBody.startsWith("{\"error\"") ? 400 : 200;
 
+        }else if("GET".equalsIgnoreCase(method) && "/stats".equals(path)) {
+            responseBody = userProfileService.getUserStats(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 200;
+
+        }else if("GET".equalsIgnoreCase(method) && "/scoreboard".equals(path)) {
+            responseBody = userProfileService.getScoreboard(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
         }else if("PUT".equalsIgnoreCase(method) && "/deck".equals(path)){
             responseBody = userConfigureDeckService.configureDeck(request);
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
@@ -94,7 +102,7 @@ public class HttpRequestHandler {
         }else if("PUT".equalsIgnoreCase(method) && path.matches("/users/.+")) {
             String username = path.split("/")[2];
             responseBody = userProfileService.editProfile(request, username);
-            status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+            status = responseBody.startsWith("{\"error\"") ? 400 : 200;
 
         }else {
             responseBody = "{\"error\": \"Not Found\"}";

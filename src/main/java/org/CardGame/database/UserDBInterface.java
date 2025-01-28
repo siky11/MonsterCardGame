@@ -47,5 +47,5 @@ public interface UserDBInterface {
      * @param user Das Benutzerobjekt mit den zu aktualisierenden Profildaten.
      * @return True, wenn die Aktualisierung erfolgreich war, sonst false.
      */
-    boolean updateUser(User user);
+    boolean updateUser(User user, String username);
 }

@@ -5,6 +5,8 @@ import org.CardGame.database.*;
 import org.CardGame.model.HttpRequest;
 import org.CardGame.model.User;
 
+import java.util.List;
+
 
 public class UserProfileService {
 
@@ -18,7 +20,7 @@ public class UserProfileService {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
         this.userDB = userDB;
-        this.tokenValidator = new TokenValidator(authDB);
+        this.tokenValidator = new TokenValidator(authDB, userDB);
     }
 
     // Methode zum Abrufen des Benutzerprofils
@@ -26,12 +28,9 @@ public class UserProfileService {
         String requestToken = request.getHeaders().get("Authorization"); // Token aus den Headern abrufen
 
         try {
-            // Benutzername aus dem Token extrahieren und validieren
-            String validatedUsername = tokenValidator.validate(requestToken);
 
-            // Überprüfen, ob der angeforderte Benutzername mit dem durch das Token validierten übereinstimmt
-            if (!validatedUsername.equals(username)) {
-                return "{\"error\": \"Unauthorized\"}";  // Zugriff verweigert, wenn der Benutzername nicht übereinstimmt
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
             }
 
             // Benutzerdaten aus der Datenbank abrufen
@@ -46,7 +45,7 @@ public class UserProfileService {
             StringBuilder jsonResponse = new StringBuilder("{");
 
             // Benutzername, Elo, Coins und Spiele gespielt
-            jsonResponse.append("\"username\": \"").append(user.getUsername()).append("\", ")
+            jsonResponse.append("\"profilename\": \"").append(user.getName()).append("\", ")
                     .append("\"bio\": ").append(user.getBio()).append(", ")
                     .append("\"image\": ").append(user.getImage()).append(", ");
             // JSON-Antwort abschließen
@@ -65,19 +64,15 @@ public class UserProfileService {
         String requestBody = request.getBody();
 
         try {
-            // Benutzername aus dem Token extrahieren und validieren
-            String validatedUsername = tokenValidator.validate(requestToken);
-
-            // Überprüfen, ob der angeforderte Benutzername mit dem durch das Token validierten übereinstimmt
-            if (!validatedUsername.equals(username)) {
-                return "{\"error\": \"Unauthorized\"}";  // Zugriff verweigert, wenn der Benutzername nicht übereinstimmt
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
             }
 
             // JSON-Body in ein UserProfile-Objekt umwandeln
             ObjectMapper objectMapper = new ObjectMapper();
             User user = objectMapper.readValue(requestBody, User.class);
 
-            boolean success = userDB.updateUser(user);
+            boolean success = userDB.updateUser(user, username);
             if (success) {
                 return "{\"message\": \"Profile updated successfully.\"}";
             } else {
@@ -87,5 +82,92 @@ public class UserProfileService {
             return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
         }
 
+    }
+
+    public String getUserStats(HttpRequest request) {
+        String requestToken = request.getHeaders().get("Authorization");
+
+        try {
+
+            String username = authDB.extractUsernameFromToken(requestToken);
+
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
+            }
+
+            // Benutzerdaten aus der Datenbank abrufen
+            User user = userDB.getUserByUsername(username); // Annahme: Eine Methode zum Abrufen von User-Daten
+
+            // Überprüfen, ob der Benutzer existiert
+            if (user == null) {
+                return "{\"error\": \"User not found\"}"; // Benutzer nicht gefunden
+            }
+
+            // StringBuilder für JSON-Antwort
+            StringBuilder jsonResponse = new StringBuilder("{");
+
+            // Benutzername, Elo, Coins und Spiele gespielt
+            jsonResponse.append("\"profilename\": \"").append(user.getName()).append("\", ")
+                    .append("\"elo\": ").append(user.getElo()).append(", ")
+                    .append("\"games_played\": ").append(user.getGamesPlayed()).append(", ");
+            // JSON-Antwort abschließen
+            jsonResponse.append("}");
+
+            // Rückgabe der JSON-Antwort als String
+            return jsonResponse.toString();
+
+        }catch (Exception e) {
+            return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
+        }
+    }
+
+    public String getScoreboard(HttpRequest request) {
+        String requestToken = request.getHeaders().get("Authorization");
+
+        try {
+
+            String username = authDB.extractUsernameFromToken(requestToken);
+
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
+            }
+
+            // Hole die ELO-Werte der Benutzer
+            List<String[]> userEloList = userDB.getAllUserEloSorted();
+
+            // StringBuilder für den JSON-Response
+            StringBuilder jsonResponse = new StringBuilder();
+
+            jsonResponse.append("{\n");  // Start des JSON-Objekts
+            jsonResponse.append("  \"scoreboard\": [\n"); // Start des scoreboard-Arrays
+
+            // Durchlaufe die Userliste und füge die Profile hinzu
+            for (int i = 0; i < userEloList.size(); i++) {
+                String[] user = userEloList.get(i);
+                String profileName = user[0];  // Benutzername
+                String elo = user[1];  // ELO-Wert
+
+                // Benutzerprofil als JSON-Objekt formatieren
+                jsonResponse.append("    {\n");
+                jsonResponse.append("      \"profilename\": \"").append(profileName).append("\",\n");
+                jsonResponse.append("      \"elo\": ").append(elo).append("\n");
+                jsonResponse.append("    }");
+
+                // Komma nach jedem Profil, außer nach dem letzten
+                if (i < userEloList.size() - 1) {
+                    jsonResponse.append(",");
+                }
+
+                jsonResponse.append("\n");
+            }
+
+            jsonResponse.append("  ]\n");  // Ende des scoreboard-Arrays
+            jsonResponse.append("}");  // Ende des JSON-Objekts
+
+            return jsonResponse.toString();  // Rückgabe der formatierten JSON-Antwort
+
+        } catch (Exception e) {
+            return "{\"error\": \"Internal Server Error: " + e.getMessage() + "\"}";
+        }
     }
 }

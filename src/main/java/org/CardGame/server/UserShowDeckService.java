@@ -12,13 +12,14 @@ public class UserShowDeckService {
     private DeckDB deckDB; // Kartenbezogene Datenbankabfragen
     private AuthDB authDB; // Authentifizierung
     private TokenValidator tokenValidator;
+    private UserDB userDB;
 
     // Konstruktor für Dependency Injection
-    public UserShowDeckService(DBAccess dbAccess, AuthDB authDB, DeckDB deckDB) {
+    public UserShowDeckService(DBAccess dbAccess, AuthDB authDB, DeckDB deckDB, UserDB userDB) {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
         this.deckDB = deckDB;
-        this.tokenValidator = new TokenValidator(authDB);
+        this.tokenValidator = new TokenValidator(authDB, userDB);
     }
 
     public String getDeckCards(HttpRequest request) {
@@ -26,8 +27,12 @@ public class UserShowDeckService {
 
         try {
 
-            // Benutzername aus dem Token extrahieren und den Token validieren
-            String username = tokenValidator.validate(requestToken);
+            String username = authDB.extractUsernameFromToken(requestToken);
+            // Benutzernamen aus dem Token extrahieren
+
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
+            }
 
             // Karten aus dem Deck des Benutzers abrufen
             List<Card> userDeck = deckDB.getUserDeck(username);
@@ -66,8 +71,12 @@ public class UserShowDeckService {
         String requestToken = request.getHeaders().get("Authorization"); // Token aus den Headern abrufen
 
         try {
-            // Benutzername aus dem Token extrahieren und den Token validieren
-            String username = tokenValidator.validate(requestToken);
+            String username = authDB.extractUsernameFromToken(requestToken);
+            // Benutzernamen aus dem Token extrahieren
+
+            if (!tokenValidator.validate(requestToken, username)) {
+                return "{\"error\": \"Unauthorized: Invalid token or user.\"}";
+            }
 
             // Karten aus dem Deck des Benutzers abrufen
             List<Card> userDeck = deckDB.getUserDeck(username);

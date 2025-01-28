@@ -30,7 +30,7 @@ public class HttpResponseSenderTest {
         responseSender.send(mockOutput, body, statusCode);
 
         // Verifiziere, dass die Antwort korrekt gesendet wurde
-        String expectedResponse = "HTTP/1.1 200 OK\r\nContent-Length: 21\r\nContent-Type: application/json\r\n\r\n{\"message\":\"Success\"}";
+        String expectedResponse = "HTTP/1.1 200 Success\r\nContent-Length: 21\r\nContent-Type: application/json\r\n\r\n{\"message\":\"Success\"}";
         String actualResponse = mockOutput.toString();
 
         assertEquals(expectedResponse, actualResponse);
