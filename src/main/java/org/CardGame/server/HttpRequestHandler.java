@@ -2,6 +2,7 @@ package org.CardGame.server;
 
 import org.CardGame.database.*;
 import org.CardGame.model.HttpRequest;
+import org.CardGame.model.HttpRequestInterface;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class HttpRequestHandler {
     public UserConfigureDeckService userConfigureDeckService;
     public UserProfileService userProfileService;
 
-    public HttpRequestHandler(DBAccess dbAccess, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB) {
+    public HttpRequestHandler(DBAccess dbAccess, AuthDBInterface authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB) {
 
         this.userRegistrationService = new UserRegistrationService(dbAccess, userDB);
         this.userLoginService = new UserLoginService(dbAccess, authDB);
@@ -40,7 +41,7 @@ public class HttpRequestHandler {
         requestParser = new HttpRequestParser(in, out);
 
         // Parsen der Anfrage
-        HttpRequest request = requestParser.parse();
+        HttpRequestInterface request = requestParser.parse();
 
         // Wenn die Anfrage ungültig oder fehlerhaft ist
         if (request == null) {

@@ -8,7 +8,7 @@ public class Main {
     public static void main(String[] args) {
         // Initialisiere DBAccess-Instanz
         DBAccess dbAccess = new DBAccess();
-        AuthDB authDB = new AuthDB();
+        AuthDBInterface authDB = new AuthDB();
         UserDB userDB = new UserDB();
         PackageCreationDB packageCreationDB = new PackageCreationDB();
         PackageTransactionDB packageTransactionDB = new PackageTransactionDB();

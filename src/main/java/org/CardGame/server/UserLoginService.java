@@ -1,8 +1,10 @@
 package org.CardGame.server;
 
 
+import org.CardGame.database.AuthDBInterface;
 import org.CardGame.database.DBAccess;
 import org.CardGame.model.HttpRequest;
+import org.CardGame.model.HttpRequestInterface;
 import org.CardGame.model.User;
 import org.CardGame.database.AuthDB;
 
@@ -13,15 +15,15 @@ import java.sql.SQLException;
 public class UserLoginService {
 
     private DBAccess dbAccess;  // Eine DB-Access-Klasse zur Verwaltung der Datenbankinteraktionen
-    private AuthDB authDB;
+    private AuthDBInterface authDB;
 
 
-    public UserLoginService(DBAccess dbAccess, AuthDB authDB) {
+    public UserLoginService(DBAccess dbAccess, AuthDBInterface authDB) {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
     }
 
-    public String authenticateUser(HttpRequest request) {
+    public String authenticateUser(HttpRequestInterface request) {
         String requestBody = request.getBody();
 
         // JSON in ein User-Objekt umwandeln

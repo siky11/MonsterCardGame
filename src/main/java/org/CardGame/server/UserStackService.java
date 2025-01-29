@@ -4,24 +4,25 @@ import org.CardGame.database.*;
 import org.CardGame.model.HttpRequest;
 import java.util.List;
 import org.CardGame.model.Card;
+import org.CardGame.model.HttpRequestInterface;
 
 public class UserStackService {
 
     private DBAccess dbAccess; // Verwaltung von Datenbankinteraktionen
     private CardDB cardDB; // Spezielle DB-Klasse für Pakettransaktionen
-    private AuthDB authDB; // AuthDB für Authentifizierungsprüfungen
+    private AuthDBInterface authDB; // AuthDB für Authentifizierungsprüfungen
     private TokenValidator tokenValidator;
     private UserDB userDB;
 
     // Konstruktor mit Dependency Injection für DB und andere Services
-    public UserStackService(DBAccess dbAccess, AuthDB authDB, CardDB cardDB, UserDB userDB) {
+    public UserStackService(DBAccess dbAccess, AuthDBInterface authDB, CardDB cardDB, UserDB userDB) {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
         this.cardDB = cardDB;
         this.tokenValidator = new TokenValidator(authDB, userDB);
     }
 
-    public String getStackCards(HttpRequest request) {
+    public String getStackCards(HttpRequestInterface request) {
         String requestToken = request.getHeaders().get("Authorization");  // Token aus den Request-Headers holen
 
         try {

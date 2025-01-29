@@ -4,6 +4,7 @@ import org.CardGame.database.*;
 import org.CardGame.model.Card;
 import org.CardGame.model.HttpRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.CardGame.model.HttpRequestInterface;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -20,7 +21,7 @@ public class PackageCreationService {
     }
 
     // Methode zum Erstellen eines Packages, überprüft den Token und verarbeitet Karten
-    public String startPackageCreation(HttpRequest request) {
+    public String startPackageCreation(HttpRequestInterface request) {
         String requestToken = request.getHeaders().get("Authorization");  // Token aus den Request-Headers holen
 
         //Entfernt das Bearer vor dem Token
@@ -50,7 +51,7 @@ public class PackageCreationService {
     }
 
     // Methode zum Erstellen des Packages und Hinzufügen der Karten
-    private String processPackage(HttpRequest request)  {
+    private String processPackage(HttpRequestInterface request)  {
         try {
 
             System.out.println(request.getBody());

@@ -1,8 +1,11 @@
 package org.CardGame.server;
 
 import org.CardGame.database.DBAccess;
+import org.CardGame.database.DBAccessInterface;
 import org.CardGame.database.UserDB;
+import org.CardGame.database.UserDBInterface;
 import org.CardGame.model.HttpRequest;
+import org.CardGame.model.HttpRequestInterface;
 import org.CardGame.model.User;
 
 import java.sql.SQLException;
@@ -10,15 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UserRegistrationService {
 
-    private DBAccess dbAccess; // Annahme: du hast eine DB-Access-Klasse für DB-Interaktionen
-    private UserDB userDB;
+    private DBAccessInterface dbAccess; // Annahme: du hast eine DB-Access-Klasse für DB-Interaktionen
+    private UserDBInterface userDB;
 
-    public UserRegistrationService(DBAccess dbAccess, UserDB userDB) {
+    public UserRegistrationService(DBAccessInterface dbAccess, UserDBInterface userDB) {
         this.dbAccess = dbAccess;
         this.userDB = userDB;
     }
 
-    public String registerUser(HttpRequest request) {
+    public String registerUser(HttpRequestInterface request) {
         String requestBody = request.getBody();
 
         // JSON in ein User-Objekt umwandeln

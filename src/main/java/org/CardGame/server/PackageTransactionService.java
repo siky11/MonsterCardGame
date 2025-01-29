@@ -1,10 +1,8 @@
 package org.CardGame.server;
 
-import org.CardGame.database.UserDB;
-import org.CardGame.database.PackageTransactionDB;
+import org.CardGame.database.*;
 import org.CardGame.model.HttpRequest;
-import org.CardGame.database.AuthDB;
-import org.CardGame.database.DBAccess;
+import org.CardGame.model.HttpRequestInterface;
 import org.CardGame.model.Package;
 
 import java.io.IOException;
@@ -16,12 +14,12 @@ public class PackageTransactionService {
 
     private DBAccess dbAccess; // Verwaltung von Datenbankinteraktionen
     private PackageTransactionDB packageTransactionDB; // Spezielle DB-Klasse für Pakettransaktionen
-    private AuthDB authDB; // AuthDB für Authentifizierungsprüfungen
+    private AuthDBInterface authDB; // AuthDB für Authentifizierungsprüfungen
     private UserDB userDB;
     private TokenValidator tokenValidator;
 
     // Konstruktor mit Dependency Injection für DB und andere Services
-    public PackageTransactionService(DBAccess dbAccess, AuthDB authDB, PackageTransactionDB packageTransactionDB, UserDB userDB) {
+    public PackageTransactionService(DBAccess dbAccess, AuthDBInterface authDB, PackageTransactionDB packageTransactionDB, UserDB userDB) {
         this.dbAccess = dbAccess;
         this.packageTransactionDB = packageTransactionDB;
         this.authDB = authDB;
@@ -29,7 +27,7 @@ public class PackageTransactionService {
         this.tokenValidator = new TokenValidator(authDB, userDB);
     }
 
-    public String startPackageTransaction(HttpRequest request) {
+    public String startPackageTransaction(HttpRequestInterface request) {
         String requestToken = request.getHeaders().get("Authorization");  // Token aus den Request-Headers holen
 
         try {
@@ -52,7 +50,7 @@ public class PackageTransactionService {
     }
 
 
-    private String processTransaction(HttpRequest request, String requestToken) {
+    private String processTransaction(HttpRequestInterface request, String requestToken) {
         try {
             // Extrahiere den Benutzernamen aus dem Token
             String username = authDB.extractUsernameFromToken(requestToken);

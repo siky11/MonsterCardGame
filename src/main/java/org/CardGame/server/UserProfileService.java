@@ -3,6 +3,7 @@ package org.CardGame.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.CardGame.database.*;
 import org.CardGame.model.HttpRequest;
+import org.CardGame.model.HttpRequestInterface;
 import org.CardGame.model.User;
 
 import java.util.List;
@@ -11,12 +12,12 @@ import java.util.List;
 public class UserProfileService {
 
     private DBAccess dbAccess; // Datenbankzugriff
-    private AuthDB authDB; // Authentifizierung
+    private AuthDBInterface authDB; // Authentifizierung
     private UserDB userDB;
     private TokenValidator tokenValidator;
 
     // Konstruktor für Dependency Injection
-    public UserProfileService(DBAccess dbAccess, AuthDB authDB, UserDB userDB) {
+    public UserProfileService(DBAccess dbAccess, AuthDBInterface authDB, UserDB userDB) {
         this.dbAccess = dbAccess;
         this.authDB = authDB;
         this.userDB = userDB;
@@ -24,7 +25,7 @@ public class UserProfileService {
     }
 
     // Methode zum Abrufen des Benutzerprofils
-    public String getUserProfile(HttpRequest request, String username) {
+    public String getUserProfile(HttpRequestInterface request, String username) {
         String requestToken = request.getHeaders().get("Authorization"); // Token aus den Headern abrufen
 
         try {
@@ -59,7 +60,7 @@ public class UserProfileService {
         }
     }
 
-    public String editProfile(HttpRequest request, String username) {
+    public String editProfile(HttpRequestInterface request, String username) {
         String requestToken = request.getHeaders().get("Authorization");
         String requestBody = request.getBody();
 
@@ -84,7 +85,7 @@ public class UserProfileService {
 
     }
 
-    public String getUserStats(HttpRequest request) {
+    public String getUserStats(HttpRequestInterface request) {
         String requestToken = request.getHeaders().get("Authorization");
 
         try {
@@ -121,7 +122,7 @@ public class UserProfileService {
         }
     }
 
-    public String getScoreboard(HttpRequest request) {
+    public String getScoreboard(HttpRequestInterface request) {
         String requestToken = request.getHeaders().get("Authorization");
 
         try {

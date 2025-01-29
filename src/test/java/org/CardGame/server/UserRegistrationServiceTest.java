@@ -1,45 +1,95 @@
 package org.CardGame.server;
 
+import org.CardGame.database.DBAccessInterface;
+import org.CardGame.database.UserDB;
+import org.CardGame.database.DBAccess;
+import org.CardGame.database.UserDBInterface;
+import org.CardGame.model.HttpRequest;
+import org.CardGame.model.HttpRequestInterface;
+import org.CardGame.model.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;  // Statischer Import
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import java.sql.SQLException;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserRegistrationServiceTest {
 
-    private static final String BASE_URL = "http://localhost:10001/users";
+    @Mock
+    private UserDBInterface userDB;
 
-    @Test
-    public void testCreateUserSuccessfully() throws IOException {
-        String payload = "{\"Username\":\"test\", \"Password\":\"user\"}";
+    @Mock
+    private DBAccessInterface dbAccess;
 
-        URL url = new URL(BASE_URL);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-        connection.getOutputStream().write(payload.getBytes());
+    @Mock
+    private HttpRequestInterface request;  // Wir mocken die Schnittstelle
 
-        int responseCode = connection.getResponseCode();
 
-        assertEquals(201, responseCode, "Expected HTTP 201 status for successful registration");
+    private UserRegistrationService userRegistrationService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        userRegistrationService = new UserRegistrationService(dbAccess, userDB);
     }
 
     @Test
-    public void testCreateUserFailure() throws IOException {
-        String invalidPayload = "{\"Username\":\"test\", \"Password\":\"user\"}";
+    void testRegisterUser_Success() throws Exception {
+        // Arrange
+        String jsonBody = "{\"Username\": \"testuser\", \"Password\": \"securepass\"}";
+        when(request.getBody()).thenReturn(jsonBody);
+        when(userDB.userExists("testuser")).thenReturn(false);
+        when(userDB.createUser(any(User.class))).thenReturn(true);
 
-        URL url = new URL(BASE_URL);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-        connection.getOutputStream().write(invalidPayload.getBytes());
+        // Act
+        String result = userRegistrationService.registerUser(request);
 
-        int responseCode = connection.getResponseCode();
+        // Assert
+        assertTrue(result.contains("User created successfully"), "User should be created successfully");
+    }
 
-        assertEquals(400, responseCode, "Expected HTTP 400 status for invalid registration request");
+
+    @Test
+    void testRegisterUser_AlreadyExists() throws SQLException {
+        // Arrange
+        String jsonBody = "{\"Username\": \"existingUser\", \"Password\": \"password\"}";
+        when(request.getBody()).thenReturn(jsonBody);
+        when(userDB.userExists("existingUser")).thenReturn(true);
+
+        // Act
+        String result = userRegistrationService.registerUser(request);
+
+        // Assert
+        assertTrue(result.contains("User already exists"), "Existing user should not be created again");
+    }
+
+    @Test
+    void testRegisterUser_InvalidJSON() throws SQLException {
+        // Arrange
+        String jsonBody = "invalid_json";
+        when(request.getBody()).thenReturn(jsonBody);
+
+        // Act
+        String result = userRegistrationService.registerUser(request);
+
+        // Assert
+        assertTrue(result.contains("Invalid JSON format"), "Invalid JSON should return an error message");
+    }
+
+    @Test
+    void testRegisterUser_DatabaseError() throws SQLException {
+        // Arrange
+        String jsonBody = "{\"Username\": \"newuser\", \"Password\": \"password\"}";
+        when(request.getBody()).thenReturn(jsonBody);
+        when(userDB.userExists("newuser")).thenReturn(false);
+        when(userDB.createUser(any(User.class))).thenThrow(new SQLException("Database failure"));
+
+        // Act
+        String result = userRegistrationService.registerUser(request);
+
+        // Assert
+        assertTrue(result.contains("Database error"), "Database failure should return an error message");
     }
 }

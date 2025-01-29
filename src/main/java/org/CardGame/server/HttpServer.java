@@ -16,7 +16,7 @@ import java.util.concurrent.Executors;
 public class HttpServer {
 
     private DBAccess dbAccess;
-    private AuthDB authDB;
+    private AuthDBInterface authDB;
     private UserDB userDB;
     private CardDB cardDB;
     private DeckDB deckDB;
@@ -26,7 +26,7 @@ public class HttpServer {
     private ExecutorService threadPool; // ExecutorService für Multithreading
 
     // Konstruktordefinition: Hier wird DBAccess injiziert
-    public HttpServer(DBAccess db, AuthDB authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB, int threadPoolSize) {
+    public HttpServer(DBAccess db, AuthDBInterface authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB, int threadPoolSize) {
         this.dbAccess = db;  // DBAccess wird über den Konstruktor übergeben
         this.authDB = authDB;       // AuthDB wird über den Konstruktor übergeben
         this.userDB = userDB;

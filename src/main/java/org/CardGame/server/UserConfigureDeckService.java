@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.CardGame.database.DBAccess;
 import org.CardGame.database.DeckDB;
 import org.CardGame.model.HttpRequest;
+import org.CardGame.model.HttpRequestInterface;
 
 import java.io.IOException;
 
@@ -28,7 +29,7 @@ public class UserConfigureDeckService {
         this.deckDB = deckDB;
     }
 
-    public String configureDeck(HttpRequest request) {
+    public String configureDeck(HttpRequestInterface request) {
 
         String requestToken = request.getHeaders().get("Authorization");
 
@@ -67,7 +68,7 @@ public class UserConfigureDeckService {
         }
     }
 
-    private List<UUID> parseCardIds(HttpRequest request) {
+    private List<UUID> parseCardIds(HttpRequestInterface request) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         try {
