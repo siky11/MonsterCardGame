@@ -16,7 +16,22 @@ public class Deck {
         deckCards.add(card);
     }
 
+    public void removeCard(Card card) {
+        deckCards.remove(card);
+    }
+
     public List<Card> getCards() {
         return deckCards;
     }
+
+    public boolean isEmpty() {
+        return deckCards.isEmpty();  // Delegiert an die `isEmpty()` Methode der ArrayList
+    }
+
+    // Gibt die Anzahl der Karten im Deck zurück
+    public int size() {
+        return deckCards.size();
+    }
+
+
 }

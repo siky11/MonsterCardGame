@@ -21,6 +21,7 @@ public class HttpRequestHandler {
     public UserShowDeckService userShowDeckService;
     public UserConfigureDeckService userConfigureDeckService;
     public UserProfileService userProfileService;
+    public BattleService battleService;
 
     public HttpRequestHandler(DBAccess dbAccess, AuthDBInterface authDB, UserDB userDB, PackageCreationDB packageCreationDB, PackageTransactionDB packageTransactionDB, CardDB cardDB, DeckDB deckDB) {
 
@@ -32,6 +33,7 @@ public class HttpRequestHandler {
         this.userConfigureDeckService = new UserConfigureDeckService(deckDB, authDB, userDB);
         this.userProfileService = new UserProfileService(dbAccess, authDB, userDB);
         this.packageTransactionService = new PackageTransactionService(dbAccess, authDB, packageTransactionDB, userDB);
+        this.battleService = new BattleService(dbAccess, authDB, userDB, cardDB, deckDB);
         this.responseSender = new HttpResponseSender();
         this.requestParser = new HttpRequestParser(null, null); // Später in handle() initialisieren
     }
@@ -70,6 +72,10 @@ public class HttpRequestHandler {
         }else if ("POST".equalsIgnoreCase(method) && "/transactions/packages".equals(path)){
             responseBody = packageTransactionService.startPackageTransaction(request);
             status = responseBody.startsWith("{\"error\"") ? 400 : 201;
+
+        }else if ("POST".equalsIgnoreCase(method) && "/battles".equals(path)){
+            responseBody = battleService.startBattle(request);
+            status = responseBody.startsWith("{\"error\"") ? 400 : 200;
 
         } else if("GET".equalsIgnoreCase(method) && "/cards".equals(path)){
             responseBody = userStackService.getStackCards(request);

@@ -163,4 +163,38 @@ public class UserDB implements UserDBInterface {
 
         return userEloList;  // Rückgabe der sortierten Liste der Benutzer und deren ELO-Werte
     }
+
+    public int getEloByUsername(String username) throws SQLException {
+        String query = "SELECT elo FROM game_user WHERE username = ?";
+
+        try (Connection conn = dbAccess.connect();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("elo");
+                } else {
+                    throw new SQLException("User not found: " + username);
+                }
+            }
+        }
+    }
+
+
+    public void updateEloByUsername(String username, int newElo) throws SQLException {
+        String query = "UPDATE game_user SET elo = ?, games_played = games_played + 1 WHERE username = ?";
+
+        try (Connection conn = dbAccess.connect();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setInt(1, newElo);
+            pstmt.setString(2, username);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows == 0) {
+                throw new SQLException("User not found: " + username);
+            }
+        }
+    }
 }
