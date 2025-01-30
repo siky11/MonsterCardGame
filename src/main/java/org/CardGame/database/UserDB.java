@@ -164,6 +164,7 @@ public class UserDB implements UserDBInterface {
         return userEloList;  // Rückgabe der sortierten Liste der Benutzer und deren ELO-Werte
     }
 
+
     public int getEloByUsername(String username) throws SQLException {
         String query = "SELECT elo FROM game_user WHERE username = ?";
 

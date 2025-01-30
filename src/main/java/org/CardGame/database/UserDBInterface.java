@@ -3,6 +3,7 @@ package org.CardGame.database;
 import org.CardGame.model.User;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 public interface UserDBInterface {
@@ -48,4 +49,5 @@ public interface UserDBInterface {
      * @return True, wenn die Aktualisierung erfolgreich war, sonst false.
      */
     boolean updateUser(User user, String username);
+
 }

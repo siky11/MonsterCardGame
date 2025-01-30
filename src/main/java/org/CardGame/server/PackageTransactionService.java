@@ -70,8 +70,8 @@ public class PackageTransactionService {
                 return "{\"error\": \"Nicht genügend Coins für diese Transaktion.\"}"; // Fehlende Coins
             }
 
-            // Hole ein vorhandenes Paket aus der Datenbank (hier Beispiel, erste verfügbare Zeile)
-            Package packageCards = packageTransactionDB.getPackageCards(); // Beispielhafte Abfrage
+            // Hole ein vorhandenes Paket aus der Datenbank
+            Package packageCards = packageTransactionDB.getPackageCards();
 
             if (packageCards == null || packageCards.getCards().isEmpty()) {
                 // Falls das Paket leer ist oder keine Karten enthält

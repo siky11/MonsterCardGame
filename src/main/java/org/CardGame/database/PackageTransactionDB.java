@@ -103,7 +103,7 @@ public class PackageTransactionDB {
         if (packageId == null) {
             throw new SQLException("Keine verfügbaren Pakete in der Datenbank.");  // Fehlermeldung bei fehlendem Paket
         }else if(packageId != null){
-            // 2. Alle Karten aus dem zufälligen Paket abfragen (Verbindung zur package_cards-Tabelle)
+            // 2. Alle Karten aus dem  Paket abfragen (Verbindung zur package_cards-Tabelle)
             String cardQuery = "SELECT gc.card_id, gc.name, gc.damage, gc.element_type, gc.type " +
                     "FROM game_card gc " +
                     "INNER JOIN package_cards pc ON gc.card_id = pc.card_id " +
@@ -132,7 +132,7 @@ public class PackageTransactionDB {
             }
         }
 
-        return new Package(cards, packageId);  // Gibt die Liste der Karten des zufälligen Pakets zurück
+        return new Package(cards, packageId);  // Gibt die Liste der Karten des Pakets zurück
     }
 
     // Paket löschen
